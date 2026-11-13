@@ -1,0 +1,87 @@
+# Giant Fiber escape circuit (MaleCNS v1.0).
+# Looming-sensitive visual projection neurons -> Giant Fiber (DNp01) -> jump / flight motor neurons.
+# Every number here is a modelling choice; see docs/ASSUMPTIONS.md.
+
+name: giant_fiber
+description: >
+  Looming-sensitive LC4/LPLC2 neurons to the Giant Fiber (DNp01) and on to
+  jump (TTMn) and flight (PSI, DLMn, DVMn, ...) motor neurons. Sub-circuit =
+  neurons on paths of up to 4 hops from the inputs to the outputs.
+
+neuprint:
+  server: https://neuprint.janelia.org
+  dataset: male-cns:v1.0
+
+selection:
+  inputs: [LC4, LPLC2]
+  hubs: [DNp01]
+  outputs:
+    - TTMn
+    - PSI
+    - "DLMn a, b"
+    - "DLMn c-f"
+    - "DVMn 1a-c"
+    - "DVMn 2a, b"
+    - "DVMn 3a, b"
+    - "Tergotr. MN"
+    - STTMm
+    - hDVM MN
+  hops_down: 2            # hops downstream of the inputs
+  hops_up: 2              # hops upstream of the outputs
+  min_weight: 10          # min synapses on an edge for it to count during selection
+  edge_min_weight: 10     # min synapses for an edge to be kept inside the selected set
+  max_neurons: 5000       # hard cap
+  auto_raise_threshold: true   # if the cap is exceeded, raise min_weight until it fits
+  weight_field: weight    # "weight" (all synapses) or "weightHP" (high-precision only)
+
+signs:
+  # Sign of a neuron's output, by neurotransmitter (Dale's law: one sign per neuron).
+  nt_sign:
+    acetylcholine: 1
+    gaba: -1
+    glutamate: -1        # GluCl-alpha makes glutamate inhibitory in the fly CNS (configurable)
+    histamine: -1
+    dopamine: 0          # neuromodulators: no fast sign in this model
+    octopamine: 0
+    serotonin: 0
+  use_celltype_fallback: true      # consensusNt unclear/missing -> celltypePredictedNt
+  min_celltype_confidence: 0.5
+  default_sign: 1                  # last resort when nothing is known
+  type_overrides: {}               # e.g. {"SomeType": -1}; also the fallback table if no NT data exists
+
+path_finder:
+  # Denominator for edge normalization: "post" = neuPrint `post` (all PSDs in the full dataset),
+  # "input_weight" = sum of ConnectsTo weights from all Neurons in the full dataset.
+  normalization: post
+
+extra_edges:
+  # NOT connectome data. Literature-based electrical couplings that EM cannot see.
+  # Off by default; toggle in the UI. Sources are cited in docs/ASSUMPTIONS.md.
+  enabled: false
+  edges:
+    - pre_type: DNp01
+      post_type: TTMn
+      kind: electrical
+      pairing: strongest_chemical   # pair each GF with the TTMn it has the most chemical synapses onto
+      synapse_equivalent: 60        # strength expressed as a number of chemical-synapse equivalents
+      source_key: gf_ttmn_gap_junction
+    - pre_type: DNp01
+      post_type: PSI
+      kind: electrical
+      pairing: strongest_chemical
+      synapse_equivalent: 60
+      source_key: gf_psi_gap_junction
+
+simulation:
+  dt_ms: 0.1
+  tau_m_ms: 20.0
+  v_rest_mv: -52.0
+  v_reset_mv: -52.0
+  v_threshold_mv: -45.0
+  refractory_ms: 2.0
+  tau_syn_ms: 5.0
+  w_syn_mv: 0.3
+  delay_ms: 2.0
+  default_duration_ms: 1000.0
+  default_trials: 10
+  base_seed: 12345

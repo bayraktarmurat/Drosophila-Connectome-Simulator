@@ -1,0 +1,14 @@
+# DEVELOPMENT ONLY: a smaller, faster version of giant_fiber.yaml.
+# WARNING: at min_weight 20 about half of the GFC neurons drop out, which breaks the
+# GF -> GFC2 -> TTMn pathway. Do not draw scientific conclusions from this config.
+
+extends: giant_fiber.yaml
+
+name: giant_fiber_lite
+description: >
+  Development-only copy of giant_fiber with a higher synapse threshold (20).
+  Loses about half of the GFC interneurons; not for scientific conclusions.
+
+selection:
+  min_weight: 20
+  edge_min_weight: 20
