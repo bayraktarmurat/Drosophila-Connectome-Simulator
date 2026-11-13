@@ -60,6 +60,27 @@ Sources (cited from the published literature; verify the exact pages and DOIs be
 |---|---|---|---|
 | Edge cost | −log(w_ij / D_i) | choice | D_i = postsynaptic neuron's **total input in the full dataset**, not the sub-circuit sum, so the sub-circuit boundary does not inflate shares |
 | D_i | neuPrint `post` (all PSDs, `normalization: post`) | choice | Alternative `input_weight`: summed `ConnectsTo` weight from all Neurons. In this circuit the median ratio between the two is 0.965 |
+| Why −log(share) and not 1/weight | | choice | −log makes path cost = −log(product of shares): "what fraction of each target's input does this chain provide". 1/weight sums inverse counts, which has no such meaning and ignores how many other inputs a target has |
+| Search | A* over simple paths, exact | method | Heuristic = exact reverse-Dijkstra distance to the targets (admissible). Verified against brute-force enumeration in the tests |
+| Type-level graph | synapses summed per type pair; D = sum of members' D_i; self-loops removed | choice | Type sign = majority sign of its neurons |
+| Sign filter | path sign = product of the presynaptic signs; neuromodulator (sign 0) edges excluded when filtering | choice | "Net excitatory" is a parity count. It ignores timing and is not a prediction of the net effect |
+
+**Paths are anatomical, not functional.** A high-score path has a large synaptic share at each step. Whether it carries activity depends on the dynamics, which is what the simulator is for.
+
+## 4b. Lesions and statistics (Phase 3)
+
+| Item | Choice | Notes |
+|---|---|---|
+| Ablation | the neuron never spikes (its column of W is effectively zero) | Its input row becomes irrelevant; no matrix copy |
+| Pairing | baseline and lesion use the same per-trial seeds, so identical stimulus trains | A paired design: differences come from the lesion, not from stimulus noise |
+| Baseline | computed once per (circuit, extra-edges flag, stimulus, duration, trials, seed) and cached | Columns never interact, so a cached baseline is bit-identical to one run alongside the lesion (tested) |
+| Primary statistic | mean difference and Cohen's d (d_av: pooled SD = √((s²_base + s²_lesion)/2)), each with a percentile bootstrap 95% CI (2000 paired resamples) | |
+| Zero variance | d = 0 if the means are equal, ±∞ otherwise | Common for silent groups: a deterministic change shows as ±∞, not as a "huge" finite d |
+| Latency | compared only on trials where both conditions spiked; response fractions reported separately | |
+| p-value | Wilcoxon signed-rank, **secondary only** | It shrinks with trial count alone; with enough simulated trials any non-zero effect is "significant" |
+| Screen ranking | \|percent change\| by default (or \|d\|) | Candidates that overlap the measured group are skipped. Lesioning a type removes all its neurons, so large types (LC4: 126 neurons) are naturally large perturbations |
+
+Full type-level screen on the Giant Fiber circuit (1,462 types, 5 trials × 300 ms, 200 columns per batch): **304 s** on the MacBook. It runs as a background job with progress.
 
 ## 5. LIF model (Phase 2)
 

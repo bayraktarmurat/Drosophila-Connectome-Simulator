@@ -23,3 +23,12 @@
 - Gecikme için "spike halka tamponu" kullanıyoruz: t anındaki spike'lar saklanıyor ve t+2 ms'de teslim ediliyor. Akım yerine spike sakladığımız için bellek küçük kalıyor.
 - Tekrarlanabilirlik: her deneme kendi tohumuna (seed) sahip; aynı tohum, aynı Poisson girdisi demek. Lezyon karşılaştırmasında taban ve lezyon aynı girdiyi görüyor, yani fark yalnızca lezyondan geliyor (eşleştirilmiş deney tasarımı).
 - İlk gözlem: girdi yoksa ağ tamamen sessiz; güçlü "looming" rampasında GF ve TTMn ateşleniyor. Ama GF ~260 Hz'e doyuyor (gerçekte bir looming'e bir-iki spike). Bu bir model uyarısı; Faz 5'te incelenecek.
+
+## Faz 3: Yol bulucu, lezyonlar, API
+- Kenar maliyeti −log(pay): pay = sinaps sayısı / hedef nöronun tüm veri setindeki toplam girdisi. Logaritma, çarpımı toplama çevirir. Böylece "en kısa yol" = "her adımda hedefin girdisinden en büyük payı taşıyan zincir" olur ve Dijkstra/A* kullanılabilir.
+- Paydanın tüm konnektomdan gelmesi önemli: yalnız alt devredeki girdiye bölseydik, alt devre sınırında kalan nöronların payı yapay olarak şişerdi.
+- A* araması: her düğümden hedefe kalan en düşük maliyeti (ters Dijkstra) sezgisel olarak kullanıyoruz. Bu tahmin hiçbir zaman fazla olmadığı için yollar maliyet sırasıyla çıkıyor; testte kaba kuvvetle tüm yolları sayıp birebir doğruladık.
+- Sanal lezyon: nöronu "hiç spike atmaz" yapmak, W'de sütununu sıfırlamakla aynı şey. Taban ve lezyon aynı tohumlarla koşuyor (eşleştirilmiş tasarım); tabanı bir kez hesaplayıp önbelleğe alıyoruz.
+- İstatistik: asıl sonuç etki büyüklüğü (Cohen's d) ve bootstrap güven aralığı. Simülasyonda deneme sayısını artırarak p-değerini istediğimiz kadar küçültebiliriz; bu yüzden p-değeri yalnızca ikincil bilgi.
+- İlk bilimsel bulgu: GF lezyonu TTMn spike'larını %45 azaltıyor ama sıfırlamıyor; DNp02, DNp11 gibi paralel inen nöron yolları da TTMn'ye ulaşıyor. Tarama ise bazı glutamaterjik GF girdilerinin (ör. PVLP010) lezyonunun TTMn'yi artırdığını gösteriyor: bu "dezinhibisyon", tamamen "glutamat = inhibitör" varsayımına bağlı ve Faz 5'te test edilecek.
+- FastAPI katmanı ince; tüm mantık `Service` sınıfında, bu yüzden HTTP olmadan da test edilebiliyor. Uzun süren tarama arka planda bir iş (job) olarak koşuyor ve ilerlemesi sorgulanabiliyor.
