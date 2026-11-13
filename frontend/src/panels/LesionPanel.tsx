@@ -267,7 +267,10 @@ export default function LesionPanel(props: LesionPanelProps) {
           </label>
         </div>
         <MetricsTable rows={result.metrics} metric={metric} />
-        <p className="hint">{result.p_value_note}</p>
+        <p className="hint">
+          {result.p_value_note} Trial-to-trial noise in the model comes only from the Poisson input, so |d| can
+          be very large for modest changes: read the size of an effect from Δ%, and use d's CI for its consistency.
+        </p>
         <div className="field-row">
           <label className="field">
             <span className="field-label">rate curve</span>

@@ -40,12 +40,12 @@ Giant Fiber circuit: 3,755 neurons signed from `consensusNt`, 9 from the cell-ty
 
 | Edge | Pairing | Strength | Status | Sources |
 |---|---|---|---|---|
-| DNp01 → TTMn (electrical) | each GF to the TTMn it has the most chemical synapses onto (R→R, L→L in the data) | 60 synapse-equivalents | literature (existence) + **placeholder (value)** | [1], [2], [3], [4] |
-| DNp01 → PSI (electrical) | same side (no chemical partner ≥ 10 synapses, so falls back to soma side) | 60 synapse-equivalents | literature (existence) + **placeholder (value)** | [1], [2], [4] |
+| DNp01 → TTMn (electrical) | each GF to the TTMn it has the most chemical synapses onto (R→R, L→L in the data) | 300 synapse-equivalents (90 mV kick) | literature (existence) + **calibrated (value)** | [1], [2], [3], [4] |
+| DNp01 → PSI (electrical) | same side (no chemical partner ≥ 10 synapses, so falls back to soma side) | 300 synapse-equivalents | literature (existence) + **calibrated (value)** | [1], [2], [4] |
 
 - **Off by default**; toggled in the UI. Phase 5 reports every result both with and without these edges.
 - Modelled as **one-way** (GF → target). Supported qualitatively by the rectification of GF–TTMn junctions [5], but a real gap junction passes current in proportion to the voltage difference. The model does not do this.
-- **The value 60 is not from the literature.** The literature supports reliable, short-latency (sub-millisecond for TTMn), roughly 1:1 transmission of GF spikes [1]. The number will be calibrated in Phase 5 against that qualitative target: one GF spike gives one target spike. This calibration is a fit to a behavioural expectation, not a measurement.
+- **The value 300 is not from the literature; it is a calibration.** The literature supports reliable, short-latency (~0.8 ms for TTMn), roughly 1:1 transmission of GF spikes [1]. In an isolated GF→TTMn pair (Phase 5, `docs/SANITY_RESULTS.md` §1), ≤120 equivalents never fire TTMn, 150–300 give exactly one spike (latency 7.3 → 2.0 ms), and ≥360 give two or more. This model cannot get both 1:1 and sub-millisecond latency, so we keep 1:1 and take the shortest latency compatible with it: 300 (2.0 ms). It is a fit to a qualitative expectation, not a measurement. The same value is used for GF→PSI, which is untested.
 
 Sources (cited from the published literature; verify the exact pages and DOIs before using them formally):
 1. Tanouye MA, Wyman RJ (1980). Motor outputs of giant nerve fiber in *Drosophila*. *J Neurophysiol* 44(2):405–421.
@@ -105,9 +105,58 @@ Loosely inspired by published whole-brain fly LIF models; defaults, not measurem
 
 **Performance (MacBook, Python 3.14, numpy 2.5, scipy 1.18).** Giant Fiber circuit (3,813 neurons, 88k edges), 1 s simulated, ramp to 150 Hz on all 311 inputs: **10 trials in 1.9 s**. Cost grows linearly with columns: 300 ms takes 0.43 s at 10 columns, 1.9 s at 50, 7.7 s at 200.
 
-## 6. Known gaps
+## 6. Phase 5: sanity checks and sensitivity (`scripts/sanity_checks.py`, full tables in `docs/SANITY_RESULTS.md`)
+
+Stimulus: linear ramp on all 311 LC4 + LPLC2 neurons, 0 → peak between 50 and 550 ms; 5 paired trials × 600 ms.
+
+### Expected behaviour vs. what the model does
+
+| Expectation | Result | Comment |
+|---|---|---|
+| No input → nothing fires | **holds** | Trivially: the model has no spontaneous activity or bias current |
+| Strong looming-like input → GF fires → TTMn fires | **holds** in all 24 grid settings | DLMn fires from ~50 Hz input onward |
+| PSI (flight) fires via GF | **only with the electrical edges** (when glutamate is inhibitory) | Chemical GF→PSI (16 synapses over 4 pairs) is below the edge threshold; consistent with GF→PSI being electrical in the fly |
+| Weak input → GF stays silent | **fails** | GF fires ~20 Hz even at a 5 Hz peak. 311 inputs converge with ~11k synapses onto a single point neuron with a uniform w_syn, so the model GF integrates everything and has no looming selectivity |
+| GF fires one or a few spikes per loom | **fails** | Model GF reaches 200–420 Hz (refractory cap ≈ 476 Hz). No adaptation, no high GF-specific threshold |
+| GF lesion reduces TTMn | **sign is robust**: TTMn decreases in every setting | **Magnitude is not**: −0.4 % to −100 % depending on the settings below |
+
+Not tuned away: these failures come from the point-neuron LIF with one global w_syn and threshold. Fixing them would need per-type parameters, which this project does not claim to know.
+
+### Sensitivity of the GF-lesion result (t = 10 circuit, unclear-NT default +1; rates in Hz at 100 Hz peak input)
+
+| w_syn (mV) | Glu sign | electrical | GF @10 Hz | GF @100 Hz | TTMn | PSI | network active | GF lesion: TTMn change |
+|---|---|---|---|---|---|---|---|---|
+| 0.15 | −1 | off | 48 | 263 | 60 | 0 | 25 % | −93 % |
+| 0.15 | −1 | on | 50 | 267 | 215 | 157 | 25 % | −98 % |
+| 0.15 | +1 | off | 257 | 362 | 267 | 165 | 56 % | −5 % |
+| 0.15 | +1 | on | 259 | 363 | 319 | 283 | 56 % | −21 % |
+| **0.30** | **−1** | **off** | **20** | **222** | **141** | **0** | **42 %** | **−54 %** (default) |
+| 0.30 | −1 | on | 21 | 210 | 228 | 134 | 42 % | −72 % |
+| 0.30 | +1 | off | 367 | 402 | 360 | 276 | 67 % | −2 % |
+| 0.30 | +1 | on | 368 | 402 | 385 | 357 | 67 % | −9 % |
+| 0.60 | −1 | off | 4 | 69 | 137 | 0 | 53 % | −18 % |
+| 0.60 | −1 | on | 4 | 71 | 171 | 47 | 54 % | −34 % |
+| 0.60 | +1 | off | 405 | 421 | 398 | 351 | 73 % | −0.4 % |
+| 0.60 | +1 | on | 406 | 421 | 412 | 400 | 73 % | −4 % |
+
+What drives the conclusions, in order:
+1. **Glutamate sign** dominates. With glutamate excitatory, 56–80 % of the network fires, GF and TTMn saturate, and removing GF barely matters (−0.4 to −31 %). With glutamate inhibitory, the GF lesion removes 18–100 % of TTMn spikes.
+2. **w_syn** is non-monotonic. Doubling it to 0.6 mV *lowers* GF firing (69 Hz), because GF's inhibitory inputs scale up too.
+3. **Electrical edges** always make the GF lesion larger (more of TTMn's drive goes through GF) and are the only way PSI fires.
+4. **Selection threshold.** The lite circuit (t = 20, fewer parallel pathways) gives larger GF-lesion effects (−63 % vs −54 % at default settings; up to −100 %). A smaller sub-circuit overstates how much one neuron matters.
+5. **Unclear-NT default** (+1 vs 0) is negligible: ≤ 11 Hz on GF, ≤ 3 points on the lesion effect. It touches only 49 neurons, mostly motor.
+
+**Robust conclusion:** in this model, GF is one of several routes from LC4/LPLC2 to TTMn, and removing it lowers TTMn output. **Not robust:** how much. Qualitatively, flies with a silenced GF can still take off, using slower "long-mode" escapes [6]; that fits the existence of parallel pathways but is not a quantitative validation.
+
+### Effect sizes in simulations
+Cohen's d in the grid reaches |d| > 100. The only trial-to-trial variability is the Poisson input, so the denominator (SD) is tiny and d reflects the model's low noise more than the size of the effect. **Read the magnitude from the % change; use d and its CI only to check that the direction is consistent across trials.** The UI shows both.
+
+6. von Reyn CR, Breads P, Peek MY, et al. (2014). A spike-timing mechanism for action selection. *Nat Neurosci* 17:962–970.
+
+## 7. Known gaps
 
 - Single-compartment neurons: no dendritic computation, no graded (non-spiking) transmission. Many fly interneurons are partly graded.
 - No neuromodulation, no plasticity, no adaptation.
 - Motor neurons are the circuit's end point; there are no muscles or behaviour.
 - Asymmetry: chemical GF→TTMn is 70 synapses on the right and 20 on the left. This may be biological or a reconstruction artefact.
+- No per-type parameters (threshold, τ_m, adaptation): the main reason the model GF is neither selective nor sparse (§6).

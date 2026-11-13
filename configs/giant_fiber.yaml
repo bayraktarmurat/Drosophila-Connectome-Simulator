@@ -63,13 +63,13 @@ extra_edges:
       post_type: TTMn
       kind: electrical
       pairing: strongest_chemical   # pair each GF with the TTMn it has the most chemical synapses onto
-      synapse_equivalent: 60        # strength expressed as a number of chemical-synapse equivalents
+      synapse_equivalent: 300       # calibrated in Phase 5: strongest 1:1 coupling (see docs/SANITY_RESULTS.md)
       source_key: gf_ttmn_gap_junction
     - pre_type: DNp01
       post_type: PSI
       kind: electrical
       pairing: strongest_chemical
-      synapse_equivalent: 60
+      synapse_equivalent: 300
       source_key: gf_psi_gap_junction
 
 simulation:

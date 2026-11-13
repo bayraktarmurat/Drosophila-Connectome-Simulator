@@ -40,3 +40,12 @@
 - Raster grafiği: her satır bir nöron, her nokta bir spike. Rol ve tip sırasına göre gruplandığında popülasyon düzeyindeki dalgalar (ör. girdi rampasıyla artan aktivite) gözle görülebiliyor.
 - Lezyon paneli tablo olarak d ve %95 güven aralığını öne çıkarıyor, p-değerini soluk gösteriyor: arayüz de istatistiksel yorumu yönlendiriyor.
 - Küçük ama önemli bir düzeltme: bir nöronun çıkış sinapslarının işareti, hedef nöronun değil, o nöronun kendi nörotransmitterine bağlı (Dale ilkesi). GF → TTMn sinapsı uyarıcıdır, TTMn glutamaterjik olsa bile.
+
+## Faz 5: Bilimsel sağlama
+- Kalibrasyon: elektriksel sinaps gücünü literatürden sayı olarak alamadık; bunun yerine "bir GF spike'ı → tam bir TTMn spike'ı" ölçütüne göre ayarladık (300 sinaps-eşdeğeri, 2 ms gecikme). Gerçek gecikme ~0,8 ms; modelimiz 1:1 iletimi ve bu kadar kısa gecikmeyi aynı anda sağlayamıyor. Bu bir model sınırı ve açıkça yazıldı.
+- Beklentinin tuttuğu kısım: girdi yoksa sessizlik; güçlü looming benzeri girdi → GF → TTMn ateşleniyor. PSI ise yalnız elektriksel sinapslarla ateşleniyor; bu, biyolojideki GF → PSI'nin elektriksel olmasıyla tutarlı.
+- Tutmayan kısım: model GF seçici değil (zayıf girdide de ateşliyor) ve doyuyor (200–400 Hz). Sebep, 311 girdinin ~11 bin sinapsla tek bir nokta nörona doğrusal olarak toplanması ve tüm nöronların aynı eşiği paylaşması. Bunu sessizce parametre ayarlayarak "düzeltmedik", belgeledik.
+- Duyarlılık analizi, bir sonucun hangi varsayıma ne kadar bağlı olduğunu gösterir. Burada glutamatın işareti baskın: glutamat uyarıcı sayılırsa ağın %56–80'i ateşleniyor ve GF lezyonu TTMn'yi neredeyse hiç değiştirmiyor; inhibitör sayılırsa %18–100 azaltıyor.
+- Sağlam sonuç: GF, LC4/LPLC2'den TTMn'ye giden birkaç yoldan biri ve kaldırılması TTMn'yi her ayarda azaltıyor (yön sağlam). Sağlam olmayan: azalmanın büyüklüğü. Bu, GF'si susturulmuş sineklerin yine de (daha yavaş) kalkış yapabilmesiyle nitel olarak uyumlu.
+- İstatistik dersi: simülasyonda denemeler arası gürültü yalnızca Poisson girdisinden geliyor, bu yüzden standart sapma çok küçük ve Cohen's d 100'ün üzerine çıkabiliyor. Bu durumda d, etkinin büyüklüğünü değil modelin sessizliğini ölçüyor; büyüklük için % değişim daha dürüst.
+- Alt devre seçimi de sonucu etkiliyor: daha küçük (t=20) devrede paralel yollar azaldığı için tek bir nöronun önemi abartılıyor.

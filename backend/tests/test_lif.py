@@ -192,3 +192,21 @@ def test_e_performance_giant_fiber() -> None:
         f"{elapsed:.2f}s, spikes={len(result.spike_steps)}"
     )
     assert elapsed < 120.0
+
+
+@pytest.mark.parametrize(("strength", "expected_spikes"), [(120.0, 0), (300.0, 1), (360.0, 2)])
+def test_electrical_calibration_isolated_pair(strength: float, expected_spikes: int) -> None:
+    """Phase 5 calibration claim: 300 synapse-equivalents = strongest 1:1 GF -> TTMn coupling."""
+    electrical = sp.csr_matrix(([strength], ([1], [0])), shape=(2, 2))
+    network = LIFNetwork(sp.csr_matrix((2, 2)), PARAMS, electrical_weights=electrical)
+    stimulus = Stimulus(targets=np.array([0]), profile="step", rate_hz=10000.0, start_ms=5.0, end_ms=5.1)
+    result = network.run(60.0, [1], stimulus=stimulus)
+    counts = result.spike_counts()
+    assert counts[0, 0] == 1
+    assert counts[1, 0] == expected_spikes
+
+
+def test_giant_fiber_config_uses_calibrated_strength() -> None:
+    config = load_config("giant_fiber")
+    strengths = {edge.synapse_equivalent for edge in config.extra_edges.edges}
+    assert strengths == {300.0}
