@@ -32,3 +32,11 @@
 - İstatistik: asıl sonuç etki büyüklüğü (Cohen's d) ve bootstrap güven aralığı. Simülasyonda deneme sayısını artırarak p-değerini istediğimiz kadar küçültebiliriz; bu yüzden p-değeri yalnızca ikincil bilgi.
 - İlk bilimsel bulgu: GF lezyonu TTMn spike'larını %45 azaltıyor ama sıfırlamıyor; DNp02, DNp11 gibi paralel inen nöron yolları da TTMn'ye ulaşıyor. Tarama ise bazı glutamaterjik GF girdilerinin (ör. PVLP010) lezyonunun TTMn'yi artırdığını gösteriyor: bu "dezinhibisyon", tamamen "glutamat = inhibitör" varsayımına bağlı ve Faz 5'te test edilecek.
 - FastAPI katmanı ince; tüm mantık `Service` sınıfında, bu yüzden HTTP olmadan da test edilebiliyor. Uzun süren tarama arka planda bir iş (job) olarak koşuyor ve ilerlemesi sorgulanabiliyor.
+
+## Faz 4: Arayüz
+- Grafik WebGL (sigma.js) ile çiziliyor: 3.813 düğüm ve on binlerce kenar SVG'de her karede DOM'u yeniden çizmeyi gerektirirdi; WebGL ise GPU'da tek seferde çizer.
+- Yerleşim (layout) bir kez Python'da hesaplanıp önbelleğe alınıyor: kuvvet-yönelimli (bağlı nöronlar birbirini çeker, hepsi birbirini iter) ama x ekseni "sinyal akış derinliğine" çekiliyor: girişler solda, motor nöronlar sağda. Böylece animasyonda aktivitenin soldan sağa yayıldığını görebiliyoruz.
+- Animasyon: simülasyon bir kez çalışıyor, sonra raster verisi zaman kaydırıcısıyla oynatılıyor. Her karede ikili arama ile son 6 ms'deki spike'lar bulunup ilgili düğümler parlatılıyor; grafik yeniden kurulmuyor, yalnızca "reducer" fonksiyonları yeniden çalışıyor.
+- Raster grafiği: her satır bir nöron, her nokta bir spike. Rol ve tip sırasına göre gruplandığında popülasyon düzeyindeki dalgalar (ör. girdi rampasıyla artan aktivite) gözle görülebiliyor.
+- Lezyon paneli tablo olarak d ve %95 güven aralığını öne çıkarıyor, p-değerini soluk gösteriyor: arayüz de istatistiksel yorumu yönlendiriyor.
+- Küçük ama önemli bir düzeltme: bir nöronun çıkış sinapslarının işareti, hedef nöronun değil, o nöronun kendi nörotransmitterine bağlı (Dale ilkesi). GF → TTMn sinapsı uyarıcıdır, TTMn glutamaterjik olsa bile.

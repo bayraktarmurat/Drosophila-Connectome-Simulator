@@ -19,6 +19,7 @@ import pandas as pd
 from connectome_app.analysis import psth, type_rate_table
 from connectome_app.config import list_configs, load_config
 from connectome_app.data import Circuit, load_circuit
+from connectome_app.layout import load_or_flow_layout
 from connectome_app.lesion import (
     BaselineCache,
     RunSettings,
@@ -198,6 +199,7 @@ class Service:
             for r in type_frame.itertuples()
         ]
         extra = circuit.extra_edges
+        layout = load_or_flow_layout(circuit)
         return CircuitData(
             name=circuit.config.name,
             description=circuit.config.description.strip(),
@@ -211,6 +213,8 @@ class Service:
             nts=[_text(n) for n in neurons.get("consensus_nt", pd.Series([""] * len(neurons)))],
             signs=[int(s) for s in circuit.signs],
             sign_sources=[str(s) for s in neurons["sign_source"]],
+            x=[float(v) for v in layout["x"]],
+            y=[float(v) for v in layout["y"]],
             edge_pre=coo.col.astype(int).tolist(),
             edge_post=coo.row.astype(int).tolist(),
             edge_weight=coo.data.astype(int).tolist(),

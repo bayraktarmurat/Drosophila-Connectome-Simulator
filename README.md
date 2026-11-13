@@ -24,6 +24,28 @@ read -s 'T?Paste your neuPrint token: ' && echo "export NEUPRINT_APPLICATION_CRE
 
 This writes `data/giant_fiber/{neurons,edges}.parquet` plus `manifest.json`. After that, the app runs offline and never calls neuPrint.
 
+Then compute the cached graph layout (about 20 s for the Giant Fiber circuit):
+
+```bash
+.venv/bin/python scripts/compute_layout.py --config giant_fiber
+```
+
+## Run the app
+
+Backend (terminal 1):
+
+```bash
+.venv/bin/uvicorn connectome_app.api:app --app-dir backend --port 8000
+```
+
+Frontend (terminal 2; first time: `npm install` inside `frontend/`):
+
+```bash
+cd frontend && npm run dev
+```
+
+Open http://localhost:5173.
+
 ## Tests
 
 ```bash

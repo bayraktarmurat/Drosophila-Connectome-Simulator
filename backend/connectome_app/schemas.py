@@ -67,6 +67,8 @@ class CircuitData(BaseModel):
     nts: list[str]
     signs: list[int]
     sign_sources: list[str]
+    x: list[float]
+    y: list[float]
     edge_pre: list[int]
     edge_post: list[int]
     edge_weight: list[int]
