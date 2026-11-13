@@ -78,6 +78,7 @@ class SimulationConfig(StrictModel):
     tau_syn_ms: float = Field(default=5.0, gt=0)
     w_syn_mv: float = 0.3
     delay_ms: float = Field(default=2.0, ge=0)
+    electrical_delay_ms: float = Field(default=0.1, ge=0)
     default_duration_ms: float = Field(default=1000.0, gt=0)
     default_trials: int = Field(default=10, ge=1)
     base_seed: int = 12345

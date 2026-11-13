@@ -14,3 +14,12 @@
 - Dale ilkesi: bir nöron tüm çıkışlarında aynı nörotransmitteri salar; bu yüzden işaret (+1/−1/0) nöron başına, yani W'nin sütunlarına uygulanıyor. İşaret sırası: tip istisnası → consensusNt → hücre tipi tahmini → varsayılan.
 - Glutamat sinek merkezi sinir sisteminde GluClα kanalı üzerinden çoğunlukla inhibitör; dopamin/oktopamin/serotonin hızlı işaret taşımadığı için 0 alındı. Hepsi config'den değiştirilebilir.
 - Gap junction'lar konnektom verisinden ayrı bir tabloda tutuluyor (`extra_edges`), böylece "veri" ile "literatüre dayalı varsayım" asla karışmıyor.
+
+## Faz 2: LIF motoru
+- LIF (sızdıran entegre-et-ateşle) nöronu bir RC devresi gibidir: girdi yoksa voltaj dinlenme değerine sızar (τ_m), girdi eşiği aşarsa spike atar ve sıfırlanır. Aksiyon potansiyelinin şeklini değil, yalnızca zamanını modelliyoruz.
+- Sinaptik girdi g ayrı bir değişken: her presinaptik spike g'ye (w_syn × sinaps sayısı × işaret) ekler ve g τ_syn ile söner. Böylece bir spike'ın etkisi anlık değil, birkaç milisaniyeye yayılır.
+- Analitik test: sabit girdi I ile eşiğe varış süresi t = τ·ln(I/(I−Δθ)), frekans = 1/(t_ref + t). Sayısal sonucumuz bu formülle %2 içinde tutuyor; bu, Euler entegrasyonunun doğru kurulduğunu kanıtlıyor.
+- Vektörleştirme: tüm denemeler (trial) ve lezyon koşulları N×B matrisinde aynı döngüde ilerliyor. Her adımda yalnızca spike atan nöronların W sütunları (CSC) alınıp küçük bir matrisle çarpılıyor: maliyet sinaps sayısıyla değil, o anki spike sayısıyla orantılı.
+- Gecikme için "spike halka tamponu" kullanıyoruz: t anındaki spike'lar saklanıyor ve t+2 ms'de teslim ediliyor. Akım yerine spike sakladığımız için bellek küçük kalıyor.
+- Tekrarlanabilirlik: her deneme kendi tohumuna (seed) sahip; aynı tohum, aynı Poisson girdisi demek. Lezyon karşılaştırmasında taban ve lezyon aynı girdiyi görüyor, yani fark yalnızca lezyondan geliyor (eşleştirilmiş deney tasarımı).
+- İlk gözlem: girdi yoksa ağ tamamen sessiz; güçlü "looming" rampasında GF ve TTMn ateşleniyor. Ama GF ~260 Hz'e doyuyor (gerçekte bir looming'e bir-iki spike). Bu bir model uyarısı; Faz 5'te incelenecek.

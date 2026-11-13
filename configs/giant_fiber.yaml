@@ -82,6 +82,7 @@ simulation:
   tau_syn_ms: 5.0
   w_syn_mv: 0.3
   delay_ms: 2.0
+  electrical_delay_ms: 0.1     # extra (electrical) edges act after one time step
   default_duration_ms: 1000.0
   default_trials: 10
   base_seed: 12345

@@ -61,20 +61,28 @@ Sources (cited from the published literature; verify the exact pages and DOIs be
 | Edge cost | −log(w_ij / D_i) | choice | D_i = postsynaptic neuron's **total input in the full dataset**, not the sub-circuit sum, so the sub-circuit boundary does not inflate shares |
 | D_i | neuPrint `post` (all PSDs, `normalization: post`) | choice | Alternative `input_weight`: summed `ConnectsTo` weight from all Neurons. In this circuit the median ratio between the two is 0.965 |
 
-## 5. LIF parameters (Phase 2)
+## 5. LIF model (Phase 2)
 
-Loosely inspired by published whole-brain fly LIF models; defaults, not measurements. The table and the sensitivity analysis are added in Phases 2 and 5.
+Loosely inspired by published whole-brain fly LIF models; defaults, not measurements. The Phase 5 sensitivity analysis shows how much the conclusions depend on them.
 
-| Parameter | Default |
-|---|---|
-| dt | 0.1 ms (Euler) |
-| τ_m | 20 ms |
-| V_rest = V_reset | −52 mV |
-| V_threshold | −45 mV |
-| refractory | 2 ms |
-| τ_syn | 5 ms |
-| w_syn | 0.3 mV per synapse |
-| synaptic delay | 2 ms |
+| Parameter | Default | Notes |
+|---|---|---|
+| dt | 0.1 ms | Euler for v; g decays by the exact factor exp(−dt/τ_syn) |
+| τ_m | 20 ms | same for every neuron (real neurons differ widely) |
+| V_rest = V_reset | −52 mV | |
+| V_threshold | −45 mV | |
+| refractory | 2 ms | v is clamped at reset, no integration |
+| τ_syn | 5 ms | one time constant for every transmitter |
+| w_syn | 0.3 mV per synapse | **one global scale**; synapse count is assumed proportional to strength |
+| chemical delay | 2 ms | same for every connection (ignores axon length) |
+| electrical (extra-edge) delay | 0.1 ms (one step) | one-way, spike-triggered; not a true gap-junction current |
+| precision | float32 state | enough for mV-scale dynamics; tests check the analytic rate within 2% |
+
+**Stimulus.** Poisson trains whose rate follows a profile (constant / step / linear ramp = "looming-like"). The default mode `spikes` makes each Poisson event a spike of the input neuron directly, bypassing its membrane. The alternative mode `synaptic` adds a fixed mV kick to the input neuron's g. A linear rate ramp is a crude stand-in for looming: real LC4/LPLC2 responses depend on angular size and speed in a nonlinear way.
+
+**Seeds.** Every column (trial) has its own seed, derived from `base_seed` with `numpy.random.SeedSequence`. Columns with the same seed get identical stimulus trains, which is how baseline and lesion runs are paired.
+
+**Performance (MacBook, Python 3.14, numpy 2.5, scipy 1.18).** Giant Fiber circuit (3,813 neurons, 88k edges), 1 s simulated, ramp to 150 Hz on all 311 inputs: **10 trials in 1.9 s**. Cost grows linearly with columns: 300 ms takes 0.43 s at 10 columns, 1.9 s at 50, 7.7 s at 200.
 
 ## 6. Known gaps
 
