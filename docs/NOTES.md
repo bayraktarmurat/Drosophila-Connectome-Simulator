@@ -49,3 +49,10 @@
 - Sağlam sonuç: GF, LC4/LPLC2'den TTMn'ye giden birkaç yoldan biri ve kaldırılması TTMn'yi her ayarda azaltıyor (yön sağlam). Sağlam olmayan: azalmanın büyüklüğü. Bu, GF'si susturulmuş sineklerin yine de (daha yavaş) kalkış yapabilmesiyle nitel olarak uyumlu.
 - İstatistik dersi: simülasyonda denemeler arası gürültü yalnızca Poisson girdisinden geliyor, bu yüzden standart sapma çok küçük ve Cohen's d 100'ün üzerine çıkabiliyor. Bu durumda d, etkinin büyüklüğünü değil modelin sessizliğini ölçüyor; büyüklük için % değişim daha dürüst.
 - Alt devre seçimi de sonucu etkiliyor: daha küçük (t=20) devrede paralel yollar azaldığı için tek bir nöronun önemi abartılıyor.
+
+## Faz 6: Cila
+- Devreden bağımsızlık testi: beslenme devresini (tat nöronları → hortum motor nöronları) yalnızca yeni bir YAML dosyasıyla ekledik; kodda tek satır değişmedi. Tip adlarını yine önce neuPrint'te sorgulayarak bulduk (ör. LB1a, claw_tpGRN, MN1–MN13).
+- "Konfigürasyonla yönetilen" tasarımın faydası: devre tanımı (veri) ile algoritma (kod) ayrı. Aynı motor, aynı testler ve aynı arayüz her devrede çalışıyor.
+- Tek komut (`make dev`) arka ucu ve ön ucu birlikte başlatıyor; `make test`, `make lint`, `make sanity` tekrar üretilebilirliği kolaylaştırıyor.
+- Kod stili otomatik denetleniyor: ruff (Python) ve oxlint + prettier + strict TypeScript. Ruff'ın SIM kurallarını bilinçli olarak kapattık, çünkü bunlar projede kullanmadığımız ternary ifadelerini önerir.
+- README, token'ın güvenli saklanmasını (yalnızca ortam değişkeni) ve verinin nasıl yeniden çekileceğini anlatıyor; sonuçların biyolojik gerçek olmadığını açıkça vurguluyor.

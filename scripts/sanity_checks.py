@@ -64,8 +64,11 @@ def calibrate_gap_junction(params: LIFParams, candidates: list[float]) -> list[C
         network = LIFNetwork(sp.csr_matrix((2, 2)), params, electrical_weights=electrical)
         start_step = int(round(5.0 / params.dt_ms))
         stimulus = Stimulus(
-            targets=np.array([0]), profile="step", rate_hz=1000.0 / params.dt_ms,
-            start_ms=start_step * params.dt_ms, end_ms=(start_step + 1) * params.dt_ms,
+            targets=np.array([0]),
+            profile="step",
+            rate_hz=1000.0 / params.dt_ms,
+            start_ms=start_step * params.dt_ms,
+            end_ms=(start_step + 1) * params.dt_ms,
         )
         result = network.run(60.0, [1], stimulus=stimulus)
         counts = result.spike_counts()
@@ -97,13 +100,21 @@ def groups_for(circuit: Circuit) -> dict[str, np.ndarray]:
 
 def looming(circuit: Circuit, peak_hz: float, duration_ms: float) -> Stimulus:
     return Stimulus(
-        targets=circuit.indices_of_role("input"), profile="ramp", rate_hz=peak_hz,
-        start_ms=50.0, end_ms=duration_ms - 50.0,
+        targets=circuit.indices_of_role("input"),
+        profile="ramp",
+        rate_hz=peak_hz,
+        start_ms=50.0,
+        end_ms=duration_ms - 50.0,
     )
 
 
 def run_condition(
-    circuit: Circuit, network: LIFNetwork, peak_hz: float, n_trials: int, duration_ms: float, seed: int,
+    circuit: Circuit,
+    network: LIFNetwork,
+    peak_hz: float,
+    n_trials: int,
+    duration_ms: float,
+    seed: int,
     with_gf_lesion: bool,
 ) -> dict:
     groups = groups_for(circuit)
@@ -207,7 +218,9 @@ def main() -> None:
     )
     report += ["## 1. Electrical-synapse calibration (isolated GF -> TTMn pair)", "", table(cal_frame), ""]
     if chosen is None:
-        report.append("No strength gives exactly one spike within 3 ms: 1:1 transmission is not reachable in this model.")
+        report.append(
+            "No strength gives exactly one spike within 3 ms: 1:1 transmission is not reachable in this model."
+        )
         extra_strength = base_config.extra_edges.edges[0].synapse_equivalent
     else:
         extra_strength = chosen.synapse_equivalent
@@ -230,7 +243,9 @@ def main() -> None:
     for use_extra in (False, True):
         circuit, network = build(calibrated, base_config.data_dir(), use_extra)
         for peak in rates:
-            row = run_condition(circuit, network, peak, n_trials, duration, base_config.simulation.base_seed, False)
+            row = run_condition(
+                circuit, network, peak, n_trials, duration, base_config.simulation.base_seed, False
+            )
             row["electrical"] = use_extra
             row["peak_hz"] = peak
             dose_rows.append(row)
@@ -275,19 +290,34 @@ def main() -> None:
     ):
         config = with_overrides(dataset_config, w_syn, glu, unclear, extra_strength)
         circuit, network = build(config, dataset_config.data_dir(), use_extra)
-        strong = run_condition(circuit, network, 100.0, n_trials, duration, base_config.simulation.base_seed, True)
-        weak = run_condition(circuit, network, 10.0, n_trials, duration, base_config.simulation.base_seed, False)
+        strong = run_condition(
+            circuit, network, 100.0, n_trials, duration, base_config.simulation.base_seed, True
+        )
+        weak = run_condition(
+            circuit, network, 10.0, n_trials, duration, base_config.simulation.base_seed, False
+        )
         grid_rows.append(
             {
-                "selection": label, "w_syn": w_syn, "glutamate": glu, "unclear": unclear, "electrical": use_extra,
-                "GF weak": weak["GF_rate"], "GF strong": strong["GF_rate"], "TTMn strong": strong["TTMn_rate"],
-                "PSI strong": strong["PSI_rate"], "DLMn strong": strong["DLMn_rate"],
-                "active": strong["fraction_active"], "lesion pct": strong["gf_lesion_ttmn_pct"],
-                "lesion d": strong["gf_lesion_ttmn_d"], "lesion ci": strong["gf_lesion_ttmn_d_ci"],
+                "selection": label,
+                "w_syn": w_syn,
+                "glutamate": glu,
+                "unclear": unclear,
+                "electrical": use_extra,
+                "GF weak": weak["GF_rate"],
+                "GF strong": strong["GF_rate"],
+                "TTMn strong": strong["TTMn_rate"],
+                "PSI strong": strong["PSI_rate"],
+                "DLMn strong": strong["DLMn_rate"],
+                "active": strong["fraction_active"],
+                "lesion pct": strong["gf_lesion_ttmn_pct"],
+                "lesion d": strong["gf_lesion_ttmn_d"],
+                "lesion ci": strong["gf_lesion_ttmn_d_ci"],
             }
         )
-        print(f"[grid] {label} w={w_syn} glu={glu} unclear={unclear} extra={use_extra} "
-              f"GF={strong['GF_rate']:.1f} TTMn={strong['TTMn_rate']:.1f} lesion={strong['gf_lesion_ttmn_pct']:.1f}%")
+        print(
+            f"[grid] {label} w={w_syn} glu={glu} unclear={unclear} extra={use_extra} "
+            f"GF={strong['GF_rate']:.1f} TTMn={strong['TTMn_rate']:.1f} lesion={strong['gf_lesion_ttmn_pct']:.1f}%"
+        )
     grid = pd.DataFrame(grid_rows)
     grid_out = pd.DataFrame(
         {
@@ -304,7 +334,8 @@ def main() -> None:
             "net active": grid["active"].map(lambda v: f"{v * 100:.0f}%"),
             "GF lesion: TTMn %": grid["lesion pct"].map(fmt),
             "d [95% CI]": [
-                f"{fmt(d, 2)} [{fmt(ci[0], 2)}, {fmt(ci[1], 2)}]" for d, ci in zip(grid["lesion d"], grid["lesion ci"])
+                f"{fmt(d, 2)} [{fmt(ci[0], 2)}, {fmt(ci[1], 2)}]"
+                for d, ci in zip(grid["lesion d"], grid["lesion ci"], strict=True)
             ],
         }
     )

@@ -52,7 +52,9 @@ def brute_force(graph: PathGraph, sources, targets, max_hops: int, sign_filter: 
         for nxt in np.flatnonzero(dense[node]):
             if nxt in path:
                 continue
-            walk(int(nxt), path + [int(nxt)], cost - np.log(dense[node, nxt]), parity * int(graph.signs[node]))
+            walk(
+                int(nxt), path + [int(nxt)], cost - np.log(dense[node, nxt]), parity * int(graph.signs[node])
+            )
 
     for source in sources:
         walk(int(source), [int(source)], 0.0, 1)
@@ -109,7 +111,9 @@ def test_sign_filter(synthetic_config: CircuitConfig, synthetic_dir: Path) -> No
     assert len(any_sign.paths) == 1
     assert any_sign.paths[0].sign == -1
     assert k_shortest_paths(graph, sources, targets, k=5, max_hops=3, sign_filter="excitatory").paths == []
-    assert len(k_shortest_paths(graph, sources, targets, k=5, max_hops=3, sign_filter="inhibitory").paths) == 1
+    assert (
+        len(k_shortest_paths(graph, sources, targets, k=5, max_hops=3, sign_filter="inhibitory").paths) == 1
+    )
 
 
 def test_type_graph(synthetic_config: CircuitConfig, synthetic_dir: Path) -> None:
@@ -137,5 +141,9 @@ def test_giant_fiber_paths_lc4_to_ttmn() -> None:
     costs = [p.cost for p in result.paths]
     assert costs == sorted(costs)
     labels = [[graph.labels[n] for n in p.nodes] for p in result.paths]
-    print("\n".join(" -> ".join(path) + f"  score={p.score:.2e}" for path, p in zip(labels, result.paths)))
+    print(
+        "\n".join(
+            " -> ".join(path) + f"  score={p.score:.2e}" for path, p in zip(labels, result.paths, strict=True)
+        )
+    )
     assert any("DNp01" in path for path in labels)

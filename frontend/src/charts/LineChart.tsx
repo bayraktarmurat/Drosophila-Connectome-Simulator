@@ -66,7 +66,10 @@ export default function LineChart(props: LineChartProps) {
       height,
       series: seriesOptions,
       scales: { x: { time: false } },
-      axes: [{ label: orDefault(props.xLabel, "time (ms)") }, { label: orDefault(props.yLabel, "rate (Hz)") }],
+      axes: [
+        { label: orDefault(props.xLabel, "time (ms)") },
+        { label: orDefault(props.yLabel, "rate (Hz)") },
+      ],
       hooks: { draw: [drawCursor] },
       legend: { live: false },
     };

@@ -62,7 +62,8 @@ function MetricsTable(props: { rows: MetricRow[]; metric: Metric }) {
           if (props.metric === "first_spike_ms") {
             responded = (
               <div className="muted small">
-                responded {formatNumber(row.responded_baseline * 100, 0)}% → {formatNumber(row.responded_lesion * 100, 0)}%
+                responded {formatNumber(row.responded_baseline * 100, 0)}% →{" "}
+                {formatNumber(row.responded_lesion * 100, 0)}%
               </div>
             );
           }
@@ -268,8 +269,9 @@ export default function LesionPanel(props: LesionPanelProps) {
         </div>
         <MetricsTable rows={result.metrics} metric={metric} />
         <p className="hint">
-          {result.p_value_note} Trial-to-trial noise in the model comes only from the Poisson input, so |d| can
-          be very large for modest changes: read the size of an effect from Δ%, and use d's CI for its consistency.
+          {result.p_value_note} Trial-to-trial noise in the model comes only from the Poisson input, so |d|
+          can be very large for modest changes: read the size of an effect from Δ%, and use d's CI for its
+          consistency.
         </p>
         <div className="field-row">
           <label className="field">
@@ -305,7 +307,9 @@ export default function LesionPanel(props: LesionPanelProps) {
     }
     let skipped = null;
     if (job.skipped.length > 0) {
-      skipped = <p className="muted small">Skipped (overlap with measured group): {job.skipped.join(", ")}</p>;
+      skipped = (
+        <p className="muted small">Skipped (overlap with measured group): {job.skipped.join(", ")}</p>
+      );
     }
     let fraction = 0;
     if (job.total > 0) {
@@ -394,11 +398,23 @@ export default function LesionPanel(props: LesionPanelProps) {
         </label>
         <label className="field">
           <span className="field-label">trials</span>
-          <input type="number" min={2} max={50} value={screenTrials} onChange={(e) => setScreenTrials(Number(e.target.value))} />
+          <input
+            type="number"
+            min={2}
+            max={50}
+            value={screenTrials}
+            onChange={(e) => setScreenTrials(Number(e.target.value))}
+          />
         </label>
         <label className="field">
           <span className="field-label">duration (ms)</span>
-          <input type="number" min={50} step={50} value={screenDuration} onChange={(e) => setScreenDuration(Number(e.target.value))} />
+          <input
+            type="number"
+            min={50}
+            step={50}
+            value={screenDuration}
+            onChange={(e) => setScreenDuration(Number(e.target.value))}
+          />
         </label>
       </div>
       <button className="primary" onClick={startScreen}>

@@ -44,4 +44,3 @@ export function pathHighlight(data: CircuitData, path: PathOut, level: PathLevel
   }
   return { nodes, edges };
 }
-

@@ -1,0 +1,23 @@
+# Feeding circuit (MaleCNS v1.0): labellar / taste-peg gustatory receptor neurons ->
+# proboscis motor neurons. Demonstrates that a new circuit is a config change only.
+# Type names were discovered with neuPrint queries (superclass cb_sensory, class gustatory,
+# subclass labellar bristle / taste peg; superclass cb_motor, types MN*).
+# Signs, LIF and path settings are inherited from giant_fiber.yaml; electrical edges are removed.
+
+extends: giant_fiber.yaml
+
+name: feeding
+description: >
+  Taste: labellar-bristle and taste-peg gustatory receptor neurons (LB*, *_tpGRN) to
+  proboscis motor neurons (MN1-MN13). No hub type; on-path neurons up to 4 hops.
+
+selection:
+  inputs: [LB1a, LB1b, LB1c, LB1d, LB1e, LB2a, LB2b, LB2c, LB2d, LB3, LB3a, LB3b, LB3c, LB3d,
+           LB4a, LB4b, claw_tpGRN, dorsal_tpGRN]
+  hubs: []
+  outputs: [MN1, MN2Da, MN2Db, MN2V, MN3L, MN3M, MN4a, MN4b, MN5, MN6, MN7, MN8, MN9, MN10,
+            MN11D, MN11V, MN12D, MN13]
+
+extra_edges:
+  enabled: false
+  edges: []

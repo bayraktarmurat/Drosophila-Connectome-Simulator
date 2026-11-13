@@ -124,7 +124,12 @@ def test_giant_fiber_end_to_end() -> None:
     assert len(data["body_ids"]) == circuits["giant_fiber"]["n_neurons"]
     paths = client.post(
         "/api/paths",
-        json={"circuit": "giant_fiber", "sources": {"types": ["LC4"]}, "targets": {"types": ["TTMn"]}, "k": 5},
+        json={
+            "circuit": "giant_fiber",
+            "sources": {"types": ["LC4"]},
+            "targets": {"types": ["TTMn"]},
+            "k": 5,
+        },
     ).json()
     assert len(paths["paths"]) == 5
     lesion = client.post(

@@ -93,12 +93,6 @@ export default function App() {
     if (circuitName === null) {
       return;
     }
-    setData(null);
-    setSim(null);
-    setSelected(null);
-    setHighlight(null);
-    setAblated(new Set());
-    setPlaying(false);
     api
       .circuit(circuitName)
       .then((value) => {
@@ -143,6 +137,17 @@ export default function App() {
     }
     return activityAt(sim, time);
   }, [sim, time, playing, tab]);
+
+  /** Switch circuits: reset everything tied to the old circuit, then load the new one. */
+  const changeCircuit = (name: string) => {
+    setData(null);
+    setSim(null);
+    setSelected(null);
+    setHighlight(null);
+    setAblated(new Set());
+    setPlaying(false);
+    setCircuitName(name);
+  };
 
   const toggleAblate = useCallback(
     (index: number) => {
@@ -201,8 +206,8 @@ export default function App() {
   if (ntMissing) {
     ntBanner = (
       <div className="banner-danger">
-        No neurotransmitter predictions in this dataset: synaptic signs come from the config's fallback
-        table only. Inhibition in this model is unreliable.
+        No neurotransmitter predictions in this dataset: synaptic signs come from the config's fallback table
+        only. Inhibition in this model is unreliable.
       </div>
     );
   }
@@ -276,7 +281,10 @@ export default function App() {
   let extraEdgeNote = null;
   if (useExtraEdges) {
     extraEdgeNote = (
-      <span className="assumption-tag" title="GF→TTMn and GF→PSI gap junctions from the literature; not in the EM data">
+      <span
+        className="assumption-tag"
+        title="GF→TTMn and GF→PSI gap junctions from the literature; not in the EM data"
+      >
         assumption active
       </span>
     );
@@ -286,7 +294,7 @@ export default function App() {
     <div className="app">
       <header>
         <h1>Connectome Circuit Explorer</h1>
-        <select value={circuitName} onChange={(e) => setCircuitName(e.target.value)}>
+        <select value={circuitName} onChange={(e) => changeCircuit(e.target.value)}>
           {circuits.map((c) => (
             <option key={c.name} value={c.name} disabled={!c.available}>
               {c.name}
@@ -297,8 +305,15 @@ export default function App() {
           {data.body_ids.length.toLocaleString()} neurons · {data.edge_pre.length.toLocaleString()} edges ·{" "}
           {String(data.manifest["dataset"])}
         </span>
-        <label className="check" title="Literature-based electrical synapses. NOT connectome data (see ASSUMPTIONS.md).">
-          <input type="checkbox" checked={useExtraEdges} onChange={(e) => setUseExtraEdges(e.target.checked)} />
+        <label
+          className="check"
+          title="Literature-based electrical synapses. NOT connectome data (see ASSUMPTIONS.md)."
+        >
+          <input
+            type="checkbox"
+            checked={useExtraEdges}
+            onChange={(e) => setUseExtraEdges(e.target.checked)}
+          />
           electrical synapses ({data.extra_edge_pre.length})
         </label>
         {extraEdgeNote}
@@ -309,7 +324,10 @@ export default function App() {
             <option value="type">cell type</option>
           </select>
         </label>
-        <label className="field-inline" title="Edges with fewer synapses are hidden in the graph (they are still simulated)">
+        <label
+          className="field-inline"
+          title="Edges with fewer synapses are hidden in the graph (they are still simulated)"
+        >
           edges ≥ {minEdgeWeight} syn
           <input
             type="range"

@@ -29,7 +29,9 @@ def run(config_name: str, iterations: int) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--config", required=True)
     parser.add_argument("--iterations", type=int, default=150)
     args = parser.parse_args()

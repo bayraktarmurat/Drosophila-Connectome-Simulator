@@ -282,8 +282,11 @@ class Service:
 
         started = time.perf_counter()
         result = network.run(
-            settings.duration_ms, settings.seeds(), stimulus=settings.stimulus,
-            alive=alive, record_indices=record,
+            settings.duration_ms,
+            settings.seeds(),
+            stimulus=settings.stimulus,
+            alive=alive,
+            record_indices=record,
         )
         elapsed = time.perf_counter() - started
 
@@ -299,8 +302,11 @@ class Service:
         table = type_rate_table(result, circuit.neurons)
         type_rates = [
             TypeRate(
-                type=str(r.type), role=str(r.role), n_neurons=int(r.n_neurons),
-                mean_rate_hz=float(r.mean_rate_hz), std_over_trials_hz=float(r.std_over_trials_hz),
+                type=str(r.type),
+                role=str(r.role),
+                n_neurons=int(r.n_neurons),
+                mean_rate_hz=float(r.mean_rate_hz),
+                std_over_trials_hz=float(r.std_over_trials_hz),
                 fraction_active=float(r.fraction_active),
             )
             for r in table.itertuples()
@@ -371,27 +377,42 @@ class Service:
             sources = self._type_nodes(circuit, graph, sources)
             targets = self._type_nodes(circuit, graph, targets)
         result = k_shortest_paths(
-            graph, sources, targets, k=request.k, max_hops=request.max_hops,
-            sign_filter=request.sign_filter, min_synapses=request.min_synapses,
+            graph,
+            sources,
+            targets,
+            k=request.k,
+            max_hops=request.max_hops,
+            sign_filter=request.sign_filter,
+            min_synapses=request.min_synapses,
         )
         paths_out: list[PathOut] = []
         for found in result.paths:
             nodes = [
                 PathNode(
-                    label=graph.labels[n], type=graph.node_types[n],
-                    body_id=graph.node_body_ids[n], index=int(n),
+                    label=graph.labels[n],
+                    type=graph.node_types[n],
+                    body_id=graph.node_body_ids[n],
+                    index=int(n),
                 )
                 for n in found.nodes
             ]
             paths_out.append(
                 PathOut(
-                    nodes=nodes, synapses=found.synapses, shares=found.shares,
-                    score=found.score, cost=found.cost, hops=found.hops, sign=found.sign,
+                    nodes=nodes,
+                    synapses=found.synapses,
+                    shares=found.shares,
+                    score=found.score,
+                    cost=found.cost,
+                    hops=found.hops,
+                    sign=found.sign,
                 )
             )
         return PathResponse(
-            level=request.level, normalization=normalization, paths=paths_out,
-            truncated=result.truncated, expansions=result.expansions,
+            level=request.level,
+            normalization=normalization,
+            paths=paths_out,
+            truncated=result.truncated,
+            expansions=result.expansions,
         )
 
     @staticmethod
@@ -428,7 +449,9 @@ class Service:
             n_ablated=int(len(ablate)),
             ablated_body_ids=[int(circuit.neurons.at[int(i), "body_id"]) for i in ablate],
             metrics=clean(outcome.metrics),
-            psth_baseline=Psth(bin_ms=request.bin_ms, bin_starts_ms=bins, groups=clean(outcome.psth_baseline)),
+            psth_baseline=Psth(
+                bin_ms=request.bin_ms, bin_starts_ms=bins, groups=clean(outcome.psth_baseline)
+            ),
             psth_lesion=Psth(bin_ms=request.bin_ms, bin_starts_ms=bins, groups=clean(outcome.psth_lesion)),
             p_value_note=P_VALUE_NOTE,
             baseline_cached=was_cached,
@@ -479,9 +502,16 @@ class Service:
                 job.total = total
 
             outcome = lesion_screen(
-                network, baseline, settings, self._screen_candidates(circuit, request), measure,
-                metric=request.metric, rank_by=request.rank_by, max_columns=request.max_columns,
-                progress=progress, should_stop=job.cancel.is_set,
+                network,
+                baseline,
+                settings,
+                self._screen_candidates(circuit, request),
+                measure,
+                metric=request.metric,
+                rank_by=request.rank_by,
+                max_columns=request.max_columns,
+                progress=progress,
+                should_stop=job.cancel.is_set,
             )
             job.results = clean(outcome.table.to_dict(orient="records"))
             job.skipped = outcome.skipped
@@ -504,9 +534,15 @@ class Service:
         if end is None:
             end = time.time()
         return ScreenStatus(
-            job_id=job.job_id, status=job.status, done=job.done, total=job.total,
-            elapsed_s=round(end - job.started, 1), results=job.results, skipped=job.skipped,
-            error=job.error, p_value_note=P_VALUE_NOTE,
+            job_id=job.job_id,
+            status=job.status,
+            done=job.done,
+            total=job.total,
+            elapsed_s=round(end - job.started, 1),
+            results=job.results,
+            skipped=job.skipped,
+            error=job.error,
+            p_value_note=P_VALUE_NOTE,
         )
 
     def cancel_screen(self, job_id: str) -> ScreenStatus:

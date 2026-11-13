@@ -105,9 +105,24 @@ export default function StimulusForm(props: StimulusFormProps) {
       </div>
       <p className="hint">{profileHelp}</p>
       <div className="field-row">
-        <NumberField label="peak rate (Hz)" value={stimulus.rate_hz} min={0} onChange={(v) => setStimulus({ rate_hz: v })} />
-        <NumberField label="baseline (Hz)" value={stimulus.baseline_hz} min={0} onChange={(v) => setStimulus({ baseline_hz: v })} />
-        <NumberField label="start (ms)" value={stimulus.start_ms} min={0} onChange={(v) => setStimulus({ start_ms: v })} />
+        <NumberField
+          label="peak rate (Hz)"
+          value={stimulus.rate_hz}
+          min={0}
+          onChange={(v) => setStimulus({ rate_hz: v })}
+        />
+        <NumberField
+          label="baseline (Hz)"
+          value={stimulus.baseline_hz}
+          min={0}
+          onChange={(v) => setStimulus({ baseline_hz: v })}
+        />
+        <NumberField
+          label="start (ms)"
+          value={stimulus.start_ms}
+          min={0}
+          onChange={(v) => setStimulus({ start_ms: v })}
+        />
         <NumberField label="end (ms)" value={endValue} min={0} onChange={(v) => setStimulus({ end_ms: v })} />
       </div>
       <div className="field-row">

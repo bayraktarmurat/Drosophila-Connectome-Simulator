@@ -94,9 +94,7 @@ def assign_roles(neurons: pd.DataFrame, selection: SelectionConfig) -> pd.Series
     return pd.Series(roles, index=neurons.index, name="role")
 
 
-def build_weight_matrix(
-    edges: pd.DataFrame, body_to_index: dict[int, int], n_neurons: int
-) -> sp.csr_matrix:
+def build_weight_matrix(edges: pd.DataFrame, body_to_index: dict[int, int], n_neurons: int) -> sp.csr_matrix:
     """Sparse W with W[post, pre] = synapse count. Duplicate edges are summed."""
     pre_ids = edges["pre_id"].to_numpy()
     post_ids = edges["post_id"].to_numpy()
@@ -123,9 +121,7 @@ def _pair_indices(
     pre_idx = np.flatnonzero((neurons["type"] == spec.pre_type).to_numpy())
     post_idx = np.flatnonzero((neurons["type"] == spec.post_type).to_numpy())
     if len(pre_idx) == 0 or len(post_idx) == 0:
-        warnings.append(
-            f"extra edge {spec.pre_type}->{spec.post_type}: type missing from circuit; skipped"
-        )
+        warnings.append(f"extra edge {spec.pre_type}->{spec.post_type}: type missing from circuit; skipped")
         return []
     sides = neurons["soma_side"].to_numpy()
     pairs: list[tuple[int, int]] = []

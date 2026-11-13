@@ -96,7 +96,7 @@ def build_neuron_graph(circuit: Circuit, normalization: Normalization = "post") 
     shares.data = shares.data / denominators[shares.indices]
     neurons = circuit.neurons
     labels: list[str] = []
-    for cell_type, body_id in zip(neurons["type"], neurons["body_id"]):
+    for cell_type, body_id in zip(neurons["type"], neurons["body_id"], strict=True):
         labels.append(f"{cell_type} ({int(body_id)})")
     body_ids: list[int | None] = []
     for body_id in neurons["body_id"]:
@@ -237,7 +237,7 @@ def _parity_ok(parity: int, sign_filter: SignFilter) -> bool:
 def _make_path(graph: PathGraph, nodes: tuple[int, ...], cost: float, parity: int) -> FoundPath:
     synapses: list[int] = []
     shares: list[float] = []
-    for pre, post in zip(nodes[:-1], nodes[1:]):
+    for pre, post in zip(nodes[:-1], nodes[1:], strict=True):
         synapses.append(int(graph.synapses[pre, post]))
         shares.append(float(graph.shares[pre, post]))
     true_cost = float(-np.sum(np.log(np.clip(shares, 1e-300, 1.0))))

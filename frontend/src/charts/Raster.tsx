@@ -85,7 +85,11 @@ export default function Raster(props: RasterProps) {
       ctx.fillRect(LEFT - 6, top, 4, bandHeight);
       ctx.font = "11px system-ui";
       ctx.textAlign = "right";
-      ctx.fillText(`${band.role} (${band.end - band.start})`, LEFT - 10, top + Math.min(bandHeight / 2 + 4, bandHeight));
+      ctx.fillText(
+        `${band.role} (${band.end - band.start})`,
+        LEFT - 10,
+        top + Math.min(bandHeight / 2 + 4, bandHeight),
+      );
     }
 
     const dot = Math.max(1, Math.min(rowHeight, 3));
@@ -101,7 +105,11 @@ export default function Raster(props: RasterProps) {
 
     ctx.fillStyle = "#475569";
     ctx.textAlign = "center";
-    for (let t = 0; t <= props.sim.duration_ms; t += Math.max(50, Math.round(props.sim.duration_ms / 10 / 50) * 50)) {
+    for (
+      let t = 0;
+      t <= props.sim.duration_ms;
+      t += Math.max(50, Math.round(props.sim.duration_ms / 10 / 50) * 50)
+    ) {
       ctx.fillText(`${t}`, xOf(t), height - 4);
     }
     if (props.currentTime !== null) {

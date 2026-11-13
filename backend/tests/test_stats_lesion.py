@@ -87,8 +87,10 @@ def test_cached_baseline_is_bit_identical_to_joint_run() -> None:
     assert len(cache) == 1
     seeds = settings.seeds()
     alive = np.ones((4, 2 * len(seeds)), dtype=bool)
-    alive[1, len(seeds):] = False
-    joint = network.run(settings.duration_ms, np.concatenate([seeds, seeds]), stimulus=settings.stimulus, alive=alive)
+    alive[1, len(seeds) :] = False
+    joint = network.run(
+        settings.duration_ms, np.concatenate([seeds, seeds]), stimulus=settings.stimulus, alive=alive
+    )
     np.testing.assert_array_equal(joint.spike_counts()[:, : len(seeds)], baseline.spike_counts())
 
 
@@ -123,8 +125,13 @@ def test_screen_ranks_relay_first_and_skips_measured_group() -> None:
     ]
     calls: list[tuple[int, int]] = []
     outcome = lesion_screen(
-        network, baseline, settings, candidates, measure=np.array([2]),
-        max_columns=12, progress=lambda done, total: calls.append((done, total)),
+        network,
+        baseline,
+        settings,
+        candidates,
+        measure=np.array([2]),
+        max_columns=12,
+        progress=lambda done, total: calls.append((done, total)),
     )
     labels = outcome.table["label"].tolist()
     assert outcome.skipped == ["output"]

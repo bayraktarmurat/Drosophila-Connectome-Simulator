@@ -74,7 +74,9 @@ export default function PathPanel(props: PathPanelProps) {
   if (result !== null) {
     let truncated = null;
     if (result.truncated) {
-      truncated = <p className="warning">Search stopped at the expansion limit; results may be incomplete.</p>;
+      truncated = (
+        <p className="warning">Search stopped at the expansion limit; results may be incomplete.</p>
+      );
     }
     let empty = null;
     if (result.paths.length === 0) {
@@ -108,7 +110,10 @@ export default function PathPanel(props: PathPanelProps) {
                       let arrow = null;
                       if (i < path.synapses.length) {
                         arrow = (
-                          <span className="arrow" title={`${(path.shares[i] * 100).toFixed(2)}% of target input`}>
+                          <span
+                            className="arrow"
+                            title={`${(path.shares[i] * 100).toFixed(2)}% of target input`}
+                          >
                             {" "}
                             →<sub>{path.synapses[i]}</sub>{" "}
                           </span>
@@ -176,7 +181,13 @@ export default function PathPanel(props: PathPanelProps) {
         </label>
         <label className="field">
           <span className="field-label">max hops</span>
-          <input type="number" min={1} max={8} value={maxHops} onChange={(e) => setMaxHops(Number(e.target.value))} />
+          <input
+            type="number"
+            min={1}
+            max={8}
+            value={maxHops}
+            onChange={(e) => setMaxHops(Number(e.target.value))}
+          />
         </label>
         <label className="field">
           <span className="field-label">net sign</span>

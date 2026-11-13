@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fetch = ["neuprint-python>=0.6"]
-dev = ["pytest>=8", "httpx>=0.27"]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6"]
 
 [build-system]
 requires = ["setuptools>=69"]
@@ -34,3 +34,17 @@ filterwarnings = [
 markers = [
     "cached: needs the real cached circuit in data/ (skipped if missing)",
 ]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["backend", "scripts"]
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes, I: import order, B: bugbear, UP: pyupgrade.
+# (SIM is deliberately off: SIM108 would ask for ternaries, which this project avoids.)
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402"]
+"scripts/sanity_checks.py" = ["E402", "E501"]

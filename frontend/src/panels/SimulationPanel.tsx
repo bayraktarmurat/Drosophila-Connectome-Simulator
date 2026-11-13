@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { CircuitData, SimulateResponse } from "../api";
 import { api } from "../api";
 import LineChart from "../charts/LineChart";
@@ -53,14 +53,25 @@ export default function SimulationPanel(props: SimulationPanelProps) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [applyLesion, setApplyLesion] = useState(false);
-  const [groups, setGroups] = useState<string[]>([]);
+  // The user's group choice is remembered per simulation result; a new result starts from defaults.
+  const [groupChoice, setGroupChoice] = useState<{ sim: SimulateResponse | null; groups: string[] }>({
+    sim: null,
+    groups: [],
+  });
 
   const sim = props.sim;
-  useEffect(() => {
-    if (sim !== null) {
-      setGroups(defaultGroups(sim, props.data, props.extraPsthTypes));
+  const groups = useMemo(() => {
+    if (sim === null) {
+      return [];
     }
-  }, [sim, props.data, props.extraPsthTypes]);
+    if (groupChoice.sim === sim) {
+      return groupChoice.groups;
+    }
+    return defaultGroups(sim, props.data, props.extraPsthTypes);
+  }, [sim, groupChoice, props.data, props.extraPsthTypes]);
+  const setGroups = (next: string[]) => {
+    setGroupChoice({ sim, groups: next });
+  };
 
   const run = async () => {
     setRunning(true);
@@ -150,8 +161,9 @@ export default function SimulationPanel(props: SimulationPanelProps) {
     results = (
       <div className="sim-results">
         <p className="muted">
-          {sim.n_trials} trials × {sim.duration_ms} ms in {sim.elapsed_s}s · {sim.total_spikes.toLocaleString()} spikes
-          (raster and graph animation show trial {sim.raster_trial})
+          {sim.n_trials} trials × {sim.duration_ms} ms in {sim.elapsed_s}s ·{" "}
+          {sim.total_spikes.toLocaleString()} spikes (raster and graph animation show trial {sim.raster_trial}
+          )
         </p>
         {truncatedNote}
         <div className="playback">
@@ -168,7 +180,11 @@ export default function SimulationPanel(props: SimulationPanelProps) {
             }}
           />
           <span className="mono">{formatNumber(props.time, 1)} ms</span>
-          <select value={props.speed} onChange={(e) => props.onSpeed(Number(e.target.value))} title="playback speed">
+          <select
+            value={props.speed}
+            onChange={(e) => props.onSpeed(Number(e.target.value))}
+            title="playback speed"
+          >
             <option value={0.02}>0.02×</option>
             <option value={0.05}>0.05×</option>
             <option value={0.1}>0.1×</option>

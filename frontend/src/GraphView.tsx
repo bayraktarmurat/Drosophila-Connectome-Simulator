@@ -3,16 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import Sigma from "sigma";
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 import type { CircuitData } from "./api";
-import {
-  ABLATED,
-  DIMMED,
-  EDGE_ELECTRICAL,
-  GLOW,
-  HIGHLIGHT,
-  edgeColor,
-  roleColor,
-  typeColor,
-} from "./colors";
+import { ABLATED, DIMMED, EDGE_ELECTRICAL, GLOW, HIGHLIGHT, edgeColor, roleColor, typeColor } from "./colors";
 
 export interface Highlight {
   nodes: Set<number>;

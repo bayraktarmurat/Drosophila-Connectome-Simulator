@@ -59,9 +59,7 @@ def cohens_d(baseline: np.ndarray, lesion: np.ndarray) -> float:
     return float("-inf")
 
 
-def _vectorized_d(
-    baseline_rows: np.ndarray, lesion_rows: np.ndarray, differences: np.ndarray
-) -> np.ndarray:
+def _vectorized_d(baseline_rows: np.ndarray, lesion_rows: np.ndarray, differences: np.ndarray) -> np.ndarray:
     """cohens_d applied row-wise (same zero-variance rules)."""
     n = baseline_rows.shape[1]
     if n < 2:
@@ -104,9 +102,7 @@ def _wilcoxon(baseline: np.ndarray, lesion: np.ndarray) -> float:
     return float(result.pvalue)
 
 
-def compare_paired(
-    baseline: np.ndarray, lesion: np.ndarray, n_boot: int = 2000, seed: int = 0
-) -> Comparison:
+def compare_paired(baseline: np.ndarray, lesion: np.ndarray, n_boot: int = 2000, seed: int = 0) -> Comparison:
     """Compare paired per-trial metric values from two conditions."""
     baseline = np.asarray(baseline, dtype=np.float64)
     lesion = np.asarray(lesion, dtype=np.float64)

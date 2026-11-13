@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
   },
   "dependencies": {
     "graphology": "^0.26.0",
@@ -23,6 +25,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "graphology-types": "^0.24.8",
     "oxlint": "^1.90.0",
+    "prettier": "^3.10.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
   }

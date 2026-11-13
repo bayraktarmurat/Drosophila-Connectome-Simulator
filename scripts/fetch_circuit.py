@@ -19,7 +19,7 @@ import os
 import sys
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -49,9 +49,7 @@ class Selection:
 def make_client(config: CircuitConfig):
     """Create a neuPrint client; fails clearly if the token is missing."""
     if not os.environ.get(TOKEN_ENV):
-        raise SystemExit(
-            f"{TOKEN_ENV} is not set. Add it to ~/.zshrc (see README) and open a new terminal."
-        )
+        raise SystemExit(f"{TOKEN_ENV} is not set. Add it to ~/.zshrc (see README) and open a new terminal.")
     from neuprint import Client
 
     return Client(config.neuprint.server, dataset=config.neuprint.dataset)
@@ -188,9 +186,7 @@ def fetch_total_weights(client, body_ids: set[int], weight_field: str) -> pd.Dat
     return merged.astype({"input_weight_total": "int64", "output_weight_total": "int64"})
 
 
-def fetch_internal_edges(
-    client, body_ids: set[int], min_weight: int, weight_field: str
-) -> pd.DataFrame:
+def fetch_internal_edges(client, body_ids: set[int], min_weight: int, weight_field: str) -> pd.DataFrame:
     """All edges with both endpoints inside the selected set."""
     ids = sorted(body_ids)
     all_ids = cypher_list(ids)
@@ -255,7 +251,7 @@ def run(config_name: str) -> Path:
         "server": config.neuprint.server,
         "dataset": config.neuprint.dataset,
         "neuprint_server_version": str(client.fetch_version()),
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "fetched_at": datetime.now(UTC).isoformat(),
         "selection": sel_cfg.model_dump(),
         "effective_min_weight": min_weight,
         "min_weight_raised_from": raised_from,
@@ -270,13 +266,18 @@ def run(config_name: str) -> Path:
         json.dump(manifest, handle, indent=2)
     log.info(
         "Wrote %s: %d neurons, %d edges (%.0fs)",
-        out_dir, manifest["n_neurons"], manifest["n_edges"], manifest["fetch_seconds"],
+        out_dir,
+        manifest["n_neurons"],
+        manifest["n_edges"],
+        manifest["fetch_seconds"],
     )
     return out_dir
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--config", required=True, help="Config name (e.g. giant_fiber) or path to YAML")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")

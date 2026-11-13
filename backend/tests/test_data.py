@@ -62,7 +62,7 @@ def test_id_mapping_is_bijective(synthetic_config: CircuitConfig, synthetic_dir:
 
 def test_roles(synthetic_config: CircuitConfig, synthetic_dir: Path) -> None:
     circuit = load_circuit(synthetic_config, synthetic_dir)
-    role_by_type = dict(zip(circuit.neurons["type"], circuit.neurons["role"]))
+    role_by_type = dict(zip(circuit.neurons["type"], circuit.neurons["role"], strict=True))
     assert role_by_type["LCa"] == ROLE_INPUT
     assert role_by_type["GF"] == ROLE_HUB
     assert role_by_type["MN"] == ROLE_OUTPUT
@@ -100,9 +100,7 @@ def test_missing_nt_column_warns_loudly(synthetic_config: CircuitConfig, synthet
     assert any("NO NEUROTRANSMITTER PREDICTIONS" in w for w in circuit.warnings)
 
 
-def test_signed_weights_flip_inhibitory_columns(
-    synthetic_config: CircuitConfig, synthetic_dir: Path
-) -> None:
+def test_signed_weights_flip_inhibitory_columns(synthetic_config: CircuitConfig, synthetic_dir: Path) -> None:
     circuit = load_circuit(synthetic_config, synthetic_dir)
     signed = circuit.signed_weights()
     inh = circuit.index_of(30)
@@ -112,11 +110,9 @@ def test_signed_weights_flip_inhibitory_columns(
     assert signed[circuit.index_of(11), dopamine] == 0
 
 
-def test_extra_edges_pair_by_strongest_chemical(
-    synthetic_config: CircuitConfig, synthetic_dir: Path
-) -> None:
+def test_extra_edges_pair_by_strongest_chemical(synthetic_config: CircuitConfig, synthetic_dir: Path) -> None:
     circuit = load_circuit(synthetic_config, synthetic_dir)
-    pairs = set(zip(circuit.extra_edges["pre_index"], circuit.extra_edges["post_index"]))
+    pairs = set(zip(circuit.extra_edges["pre_index"], circuit.extra_edges["post_index"], strict=True))
     expected = {
         (circuit.index_of(10), circuit.index_of(20)),
         (circuit.index_of(11), circuit.index_of(21)),
@@ -145,9 +141,7 @@ def test_app_does_not_import_neuprint() -> None:
         "    sys.exit(1)\n"
     )
     env_path = str(PROJECT_ROOT / "backend")
-    result = subprocess.run(
-        [sys.executable, "-c", code], cwd=env_path, capture_output=True, text=True
-    )
+    result = subprocess.run([sys.executable, "-c", code], cwd=env_path, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
 
 

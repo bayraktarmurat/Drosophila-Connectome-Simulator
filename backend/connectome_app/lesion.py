@@ -44,8 +44,14 @@ class RunSettings:
         if self.stimulus is not None:
             s = self.stimulus
             stim_key = (
-                tuple(int(t) for t in s.targets), s.profile, s.rate_hz, s.baseline_hz,
-                s.start_ms, s.end_ms, s.mode, s.synaptic_weight_mv,
+                tuple(int(t) for t in s.targets),
+                s.profile,
+                s.rate_hz,
+                s.baseline_hz,
+                s.start_ms,
+                s.end_ms,
+                s.mode,
+                s.synaptic_weight_mv,
             )
         return (self.duration_ms, self.n_trials, self.base_seed, stim_key)
 
@@ -108,9 +114,7 @@ class BaselineCache:
     def get(self, network_key: tuple, network: LIFNetwork, settings: RunSettings) -> SimulationResult:
         key = (network_key, settings.cache_key())
         if key not in self._store:
-            self._store[key] = network.run(
-                settings.duration_ms, settings.seeds(), stimulus=settings.stimulus
-            )
+            self._store[key] = network.run(settings.duration_ms, settings.seeds(), stimulus=settings.stimulus)
         return self._store[key]
 
     def __len__(self) -> int:
