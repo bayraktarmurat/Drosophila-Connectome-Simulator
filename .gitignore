@@ -1,6 +1,7 @@
 # Python
 .venv/
 __pycache__/
+.ruff_cache/
 *.pyc
 *.egg-info/
 .pytest_cache/
@@ -11,6 +12,10 @@ __pycache__/
 
 # Cached connectome data (refetch with scripts/fetch_circuit.py)
 data/
+docs/sanity_dose.csv
+docs/sanity_grid.csv
+docs/SANITY_RESULTS.md
+COMMANDS.md
 
 # Frontend
 node_modules/
@@ -20,6 +25,4 @@ frontend/dist/
 .idea/
 .vscode/
 .DS_Store
-
-# Local Claude/preview config (machine-specific paths)
 .claude/
