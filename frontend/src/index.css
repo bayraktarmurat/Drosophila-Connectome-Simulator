@@ -1,15 +1,28 @@
+/* Dark grey theme. Canvas charts take their colours from colors.ts. */
 :root {
-  --border: #e2e8f0;
-  --surface: #ffffff;
-  --muted: #64748b;
-  --accent: #ea580c;
+  color-scheme: dark;
+  --bg: #1c1d20;
+  --graph-bg: #17181b;
+  --surface: #232529;
+  --surface-2: #2c2f34;
+  --surface-3: #363a40;
+  --border: #383b41;
+  --border-strong: #4a4e55;
+  --text: #e4e6ea;
+  --muted: #9aa0aa;
+  --faint: #6b717b;
+  --accent: #f97316;
+  --accent-soft: rgba(249, 115, 22, 0.16);
+  --row-hover: rgba(255, 255, 255, 0.05);
+  --danger: #f87171;
+  --warning: #fbbf24;
   font-family:
     system-ui,
     -apple-system,
     "Segoe UI",
     sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--text);
+  background: var(--bg);
 }
 
 * {
@@ -18,29 +31,44 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+}
+
+body.resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 button {
   font: inherit;
   font-size: 13px;
   padding: 5px 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
-  background: white;
+  background: var(--surface-2);
+  color: var(--text);
   cursor: pointer;
   margin-right: 6px;
 }
 
+button:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: default;
 }
 
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: white;
+  color: #1c1d20;
   font-weight: 600;
+}
+
+button.primary:hover:not(:disabled) {
+  background: #fb8a3c;
 }
 
 button.small {
@@ -53,9 +81,21 @@ select {
   font: inherit;
   font-size: 13px;
   padding: 3px 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
-  background: white;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+input:focus,
+select:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
+}
+
+input[type="checkbox"],
+input[type="range"] {
+  accent-color: var(--accent);
 }
 
 h3,
@@ -65,4 +105,18 @@ h4 {
 
 h4 {
   font-size: 13px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }

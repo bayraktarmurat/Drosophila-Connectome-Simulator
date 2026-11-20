@@ -1,25 +1,48 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CircuitData, CircuitSummary, PathLevel, PathOut, SimulateResponse } from "./api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CircuitData, CircuitSummary, NeuronSet, PathLevel, PathOut, SimulateResponse } from "./api";
 import { api } from "./api";
-import { EDGE_ELECTRICAL, EDGE_EXCITATORY, EDGE_INHIBITORY, ROLE_COLORS } from "./colors";
 import GraphView from "./GraphView";
 import type { ColorBy, Highlight } from "./GraphView";
 import LesionPanel from "./panels/LesionPanel";
 import NeuronPanel from "./panels/NeuronPanel";
 import PathPanel from "./panels/PathPanel";
+import QueryPanel from "./panels/QueryPanel";
 import SimulationPanel from "./panels/SimulationPanel";
 import type { RunSettings } from "./state";
 import { defaultRunSettings } from "./state";
 import "./App.css";
 
-type Tab = "neuron" | "simulate" | "paths" | "lesion";
+type Tab = "neuron" | "simulate" | "paths" | "lesion" | "query";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "neuron", label: "Neuron" },
   { id: "simulate", label: "Simulate" },
   { id: "paths", label: "Paths" },
   { id: "lesion", label: "Lesion" },
+  { id: "query", label: "Query" },
 ];
+
+const ASIDE_MIN = 340;
+const ASIDE_DEFAULT = 560;
+const ASIDE_STORAGE_KEY = "connectome.asideWidth";
+
+/** Side-panel width remembered in this browser (falls back to the default). */
+function initialAsideWidth(): number {
+  try {
+    const stored = Number(window.localStorage.getItem(ASIDE_STORAGE_KEY));
+    if (Number.isFinite(stored) && stored >= ASIDE_MIN) {
+      return stored;
+    }
+  } catch {
+    // storage unavailable: use the default
+  }
+  return ASIDE_DEFAULT;
+}
+
+function clampAsideWidth(width: number): number {
+  const maximum = Math.max(ASIDE_MIN, window.innerWidth - 240);
+  return Math.min(Math.max(width, ASIDE_MIN), maximum);
+}
 
 const GLOW_WINDOW_MS = 6;
 
@@ -73,6 +96,46 @@ export default function App() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(0.05);
   const [extraPsthTypes, setExtraPsthTypes] = useState<string[]>([]);
+  const [asideWidth, setAsideWidth] = useState<number>(initialAsideWidth);
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  // Drag the divider between graph and side panel to resize the panel.
+  useEffect(() => {
+    const move = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (drag === null) {
+        return;
+      }
+      setAsideWidth(clampAsideWidth(drag.startWidth + drag.startX - event.clientX));
+    };
+    const up = () => {
+      if (dragRef.current === null) {
+        return;
+      }
+      dragRef.current = null;
+      document.body.classList.remove("resizing");
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ASIDE_STORAGE_KEY, String(asideWidth));
+    } catch {
+      // storage unavailable: width is not remembered
+    }
+  }, [asideWidth]);
+
+  const startResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    dragRef.current = { startX: event.clientX, startWidth: asideWidth };
+    document.body.classList.add("resizing");
+    event.preventDefault();
+  };
 
   useEffect(() => {
     api
@@ -179,9 +242,9 @@ export default function App() {
       return;
     }
     const first = path.nodes[0];
-    let targets = { types: [first.type], body_ids: [] as number[], roles: [] as string[] };
+    let targets: NeuronSet = { types: [first.type], instances: [], body_ids: [], roles: [] };
     if (level === "neuron" && first.body_id !== null) {
-      targets = { types: [], body_ids: [first.body_id], roles: [] };
+      targets = { types: [], instances: [], body_ids: [first.body_id], roles: [] };
     }
     setSettings({ ...settings, stimulus: { ...settings.stimulus, targets } });
     const types: string[] = [];
@@ -235,6 +298,7 @@ export default function App() {
         ablated={ablated}
         onSelect={setSelected}
         onToggleAblate={toggleAblate}
+        onHighlight={setHighlight}
       />
     );
   } else if (tab === "simulate") {
@@ -255,11 +319,27 @@ export default function App() {
         speed={speed}
         onSpeed={setSpeed}
         extraPsthTypes={extraPsthTypes}
+        onSelectNeuron={(index) => {
+          setSelected(index);
+          setTab("neuron");
+        }}
       />
     );
   } else if (tab === "paths") {
     panel = (
       <PathPanel circuit={circuitName} data={data} onHighlight={setHighlight} onSimulatePath={simulatePath} />
+    );
+  } else if (tab === "query") {
+    panel = (
+      <QueryPanel
+        circuit={circuitName}
+        data={data}
+        onHighlight={setHighlight}
+        onSelect={(index) => {
+          setSelected(index);
+          setTab("neuron");
+        }}
+      />
     );
   } else {
     panel = (
@@ -287,6 +367,15 @@ export default function App() {
       >
         assumption active
       </span>
+    );
+  }
+
+  let clearHighlightButton = null;
+  if (highlight !== null) {
+    clearHighlightButton = (
+      <button className="graph-overlay-button" onClick={() => setHighlight(null)}>
+        ✕ clear highlight ({highlight.nodes.size} neurons)
+      </button>
     );
   }
 
@@ -358,25 +447,15 @@ export default function App() {
             onNodeClick={handleNodeClick}
             onStageClick={() => setSelected(null)}
           />
-          <div className="legend">
-            {Object.entries(ROLE_COLORS).map(([role, color]) => (
-              <div key={role}>
-                <span className="role-dot" style={{ background: color }} /> {role}
-              </div>
-            ))}
-            <div>
-              <span className="edge-swatch" style={{ background: EDGE_EXCITATORY }} /> excitatory
-            </div>
-            <div>
-              <span className="edge-swatch" style={{ background: EDGE_INHIBITORY }} /> inhibitory
-            </div>
-            <div>
-              <span className="edge-swatch" style={{ background: EDGE_ELECTRICAL }} /> electrical (assumed)
-            </div>
-            <div className="muted small">x ≈ signal-flow depth: inputs left, outputs right</div>
-          </div>
+          {clearHighlightButton}
         </section>
-        <aside>
+        <div
+          className="aside-resizer"
+          onPointerDown={startResize}
+          onDoubleClick={() => setAsideWidth(ASIDE_DEFAULT)}
+          title="Drag to resize the panel (double-click to reset)"
+        />
+        <aside style={{ width: asideWidth }}>
           <nav className="tabs">
             {TABS.map((t) => {
               let className = "tab";

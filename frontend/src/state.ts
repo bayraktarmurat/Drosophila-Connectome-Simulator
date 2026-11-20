@@ -21,7 +21,7 @@ export function defaultRunSettings(data: CircuitData): RunSettings {
   }
   return {
     stimulus: {
-      targets: { types: [], body_ids: [], roles: ["input"] },
+      targets: { types: [], instances: [], body_ids: [], roles: ["input"] },
       profile: "ramp",
       rate_hz: 100,
       baseline_hz: 0,

@@ -21,3 +21,12 @@ selection:
 extra_edges:
   enabled: false
   edges: []
+
+# Calibrated with scripts/calibrate_wsyn.py using the criterion of Shiu et al. 2024 (Nature 634,
+# 210-219): sugar GRNs (LB3b + LB3c, Gr64f) at 100 Hz should drive MN9 to ~80% of its maximal
+# rate. On this sub-circuit (10 trials) the ratio is 0.67 at 0.162 mV, 0.79 at 0.164 mV and
+# 0.87 at 0.165 mV: the transition is very steep, so treat the value as approximate.
+# The inherited 0.3 mV saturates MN9 already at 10 Hz sugar input. Indirect calibration: the
+# criterion summarises experiments (Dahanukar 2007, Inagaki 2012); it is not a synapse measurement.
+simulation:
+  w_syn_mv: 0.164

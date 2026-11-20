@@ -160,3 +160,15 @@ def test_cached_giant_fiber_circuit() -> None:
     assert len(circuit.indices_of_role(ROLE_OUTPUT)) > 0
     assert circuit.neurons["total_post"].notna().all()
     assert len(circuit.extra_edges) == 4
+
+
+def test_resolve_instances(synthetic_config, synthetic_dir) -> None:
+    from connectome_app.schemas import NeuronSet
+    from connectome_app.service import Service
+
+    circuit = load_circuit(synthetic_config, synthetic_dir)
+    left = Service.resolve(circuit, NeuronSet(instances=["LCa_L"]))
+    assert circuit.body_ids[left].tolist() == [1]
+    union = Service.resolve(circuit, NeuronSet(instances=["LCa_L"], types=["GF"]))
+    assert sorted(circuit.body_ids[union].tolist()) == [1, 10, 11]
+    assert len(Service.resolve(circuit, NeuronSet(instances=["missing_X"]))) == 0

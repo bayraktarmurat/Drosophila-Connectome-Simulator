@@ -72,8 +72,11 @@ make sanity   # re-run the Phase 5 science checks (~2 min) -> docs/SANITY_RESULT
 3. **Paths.** Choose a source and a target (types, roles or bodyIds), then *Find paths*. Score = product of the per-edge shares of each target's total input. Click a row to highlight the path; *simulate* pre-fills the stimulus with the path's first node and plots its types.
 4. **Lesion.** Add `DNp01` (or tick *click graph nodes to ablate*), then *Run baseline vs lesion*. The table reports the mean ± SD per output group, Δ%, and Cohen's d with a bootstrap 95% CI; the p-value is shown greyed out, as secondary. The rate-curve overlay shows the baseline solid and the lesion dashed.
 5. **Lesion screen.** Removes each cell type in turn (all 1,462 take ~5 min) and ranks the effect on a measured group. Click a bar to highlight that type.
-6. **Electrical synapses** (header toggle) adds the literature-based GF→TTMn/PSI gap junctions, which EM cannot see. This is a labelled assumption, not data; see ASSUMPTIONS §3.
-7. **⚠ model warnings** lists sign fallbacks and other caveats for the loaded circuit.
+6. **Query.** Is there a connection between two neurons or groups? Enter bodyIds, instances (`DNge023_L`) or types for A and B: you get the direct edges both ways, then the strongest indirect paths A → B. Only edges with ≥ 10 synapses inside the sub-circuit exist in the data.
+7. **Neuron tab.** Lists every input and output partner; *show all* opens a filterable window, *show on graph* highlights them. Everywhere a neuron set is asked for, an instance such as `LB3c_L` selects one side only.
+8. **Raster explorer.** *⤢ enlarge and explore* opens the raster full-window: scroll through neurons, ⌘/Ctrl + scroll to zoom time, drag to pan, hover for the neuron name and spike time, double-click a row to open that neuron. The divider between graph and side panel can be dragged.
+9. **Electrical synapses** (header toggle) adds the literature-based GF→TTMn/PSI gap junctions, which EM cannot see. This is a labelled assumption, not data; see ASSUMPTIONS §3.
+10. **⚠ model warnings** lists sign fallbacks and other caveats for the loaded circuit.
 
 ## Add a new circuit
 

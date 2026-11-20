@@ -151,3 +151,30 @@ def test_group_metric_rate_and_count() -> None:
     counts = group_metric(result, np.array([0]), "spike_count", columns)
     rates = group_metric(result, np.array([0]), "rate_hz", columns)
     np.testing.assert_allclose(rates, counts / 0.4)
+
+
+def brake_network() -> LIFNetwork:
+    """input(0) -> output(2) weak excitation, input(0) -> brake(1) -| output(2), side(3) unconnected."""
+    signed = np.zeros((4, 4))
+    signed[2, 0] = 120.0
+    signed[1, 0] = 200.0
+    signed[2, 1] = -300.0
+    return LIFNetwork(sp.csr_matrix(signed), PARAMS)
+
+
+def test_screen_ranks_release_from_silent_baseline_first() -> None:
+    network = brake_network()
+    settings = RunSettings(
+        duration_ms=400.0,
+        n_trials=6,
+        base_seed=11,
+        stimulus=Stimulus(targets=np.array([0]), profile="constant", rate_hz=150.0),
+    )
+    baseline = BaselineCache().get(("brake", False), network, settings)
+    assert baseline.spike_counts()[2].sum() == 0
+    candidates = [ScreenCandidate("side", np.array([3])), ScreenCandidate("brake", np.array([1]))]
+    outcome = lesion_screen(network, baseline, settings, candidates, measure=np.array([2]))
+    first = outcome.table.iloc[0]
+    assert first["label"] == "brake"
+    assert np.isnan(first["percent_change"])
+    assert first["mean_difference"] > 0

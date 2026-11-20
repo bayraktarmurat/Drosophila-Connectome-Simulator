@@ -145,6 +145,8 @@ class Service:
     @staticmethod
     def resolve(circuit: Circuit, neuron_set: NeuronSet) -> np.ndarray:
         parts = [circuit.select(neuron_set.types, neuron_set.body_ids)]
+        if neuron_set.instances:
+            parts.append(circuit.indices_of_instances(neuron_set.instances))
         for role in neuron_set.roles:
             parts.append(circuit.indices_of_role(role))
         return np.unique(np.concatenate(parts)).astype(np.int64)
@@ -226,6 +228,7 @@ class Service:
         )
 
     def neuron_detail(self, name: str, body_id: int, top: int = 10) -> NeuronDetail:
+        """Identity, sign provenance and the strongest partners (`top` <= 0 returns all)."""
         circuit = self.circuit(name)
         index = circuit.index_of(body_id)
         row = circuit.neurons.iloc[index]
@@ -253,7 +256,9 @@ class Service:
 
     @staticmethod
     def _partners(circuit: Circuit, indices: np.ndarray, weights: np.ndarray, top: int) -> list[Partner]:
-        order = np.argsort(-weights)[:top]
+        order = np.argsort(-weights, kind="stable")
+        if top > 0:
+            order = order[:top]
         partners: list[Partner] = []
         for k in order:
             i = int(indices[k])
@@ -262,6 +267,7 @@ class Service:
                     body_id=int(circuit.neurons.at[i, "body_id"]),
                     index=i,
                     type=_text(circuit.neurons.at[i, "type"]),
+                    instance=_instance_text(circuit, i),
                     synapses=int(weights[k]),
                     sign=int(circuit.signs[i]),
                 )
@@ -551,6 +557,13 @@ class Service:
                 raise KeyError(f"Unknown screen job {job_id}")
             self._jobs[job_id].cancel.set()
         return self.screen_status(job_id)
+
+
+def _instance_text(circuit: Circuit, index: int) -> str:
+    """Instance label of one neuron, or an empty string when the column is missing."""
+    if "instance" not in circuit.neurons.columns:
+        return ""
+    return _text(circuit.neurons.at[index, "instance"])
 
 
 def _optional_int(value: object) -> int | None:

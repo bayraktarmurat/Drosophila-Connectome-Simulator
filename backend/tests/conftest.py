@@ -73,6 +73,7 @@ def make_neurons() -> pd.DataFrame:
             {
                 "body_id": body_id,
                 "type": cell_type,
+                "instance": f"{cell_type}_{side}",
                 "soma_side": side,
                 "consensus_nt": nt,
                 "celltype_predicted_nt": ct_nt,

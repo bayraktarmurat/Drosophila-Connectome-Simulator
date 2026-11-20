@@ -57,6 +57,13 @@ class Circuit:
         mask = self.neurons["type"].isin(types).to_numpy()
         return np.flatnonzero(mask)
 
+    def indices_of_instances(self, instances: list[str]) -> np.ndarray:
+        """Matrix indices of all neurons whose instance (type + side label) is in `instances`."""
+        if "instance" not in self.neurons.columns:
+            return np.zeros(0, dtype=np.int64)
+        mask = self.neurons["instance"].isin(instances).to_numpy()
+        return np.flatnonzero(mask)
+
     def select(self, types: list[str] | None = None, body_ids: list[int] | None = None) -> np.ndarray:
         """Sorted unique matrix indices for a union of cell types and bodyIds."""
         chosen: list[np.ndarray] = []

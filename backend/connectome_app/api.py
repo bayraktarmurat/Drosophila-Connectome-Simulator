@@ -57,8 +57,9 @@ def create_app(service: Service | None = None) -> FastAPI:
         return service.circuit_data(name)
 
     @app.get("/api/circuits/{name}/neurons/{body_id}", response_model=NeuronDetail)
-    def neuron(name: str, body_id: int) -> NeuronDetail:
-        return service.neuron_detail(name, body_id)
+    def neuron(name: str, body_id: int, top: int = 10) -> NeuronDetail:
+        """`top` limits the partner lists; 0 returns every partner."""
+        return service.neuron_detail(name, body_id, top)
 
     @app.post("/api/simulate", response_model=SimulateResponse)
     def simulate(request: SimulateRequest) -> SimulateResponse:

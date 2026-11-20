@@ -24,7 +24,7 @@ from connectome_app.stimulus import Stimulus
 
 Metric = Literal["spike_count", "rate_hz", "first_spike_ms"]
 METRICS: tuple[Metric, ...] = ("spike_count", "rate_hz", "first_spike_ms")
-RankBy = Literal["percent_change", "cohens_d"]
+RankBy = Literal["percent_change", "cohens_d", "mean_difference"]
 
 
 @dataclass(frozen=True)
@@ -240,11 +240,26 @@ def lesion_screen(
 
     table = pd.DataFrame(rows)
     if len(table) > 0:
-        if rank_by == "cohens_d":
-            key = table["cohens_d"].abs()
-        else:
-            key = table["percent_change"].abs()
-        table = table.assign(_rank_key=key.fillna(-1.0))
-        table = table.sort_values("_rank_key", ascending=False).drop(columns="_rank_key")
-        table = table.reset_index(drop=True)
+        table = rank_screen_table(table, rank_by)
     return ScreenOutcome(table=table, skipped=skipped)
+
+
+def rank_screen_table(table: pd.DataFrame, rank_by: RankBy) -> pd.DataFrame:
+    """Sort screen rows by effect size, largest first.
+
+    A silent baseline makes the percent change undefined (NaN). Waking a silent group is the
+    largest possible relative change, so such rows rank first under "percent_change"; ties
+    are broken by the absolute mean difference.
+    """
+    difference = table["mean_difference"].abs().fillna(0.0)
+    if rank_by == "cohens_d":
+        primary = table["cohens_d"].abs().fillna(-1.0)
+    elif rank_by == "mean_difference":
+        primary = difference
+    else:
+        percent = table["percent_change"].abs()
+        woke_from_zero = percent.isna() & (difference > 0)
+        primary = percent.mask(woke_from_zero, np.inf).fillna(-1.0)
+    ranked = table.assign(_primary=primary, _secondary=difference)
+    ranked = ranked.sort_values(["_primary", "_secondary"], ascending=False)
+    return ranked.drop(columns=["_primary", "_secondary"]).reset_index(drop=True)

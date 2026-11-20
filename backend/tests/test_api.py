@@ -47,6 +47,14 @@ def test_neuron_detail(client: TestClient) -> None:
     assert client.get("/api/circuits/synthetic/neurons/12345").status_code == 404
 
 
+def test_neuron_detail_all_partners(client: TestClient) -> None:
+    limited = client.get("/api/circuits/synthetic/neurons/11?top=1").json()
+    assert len(limited["top_inputs"]) == 1
+    everything = client.get("/api/circuits/synthetic/neurons/11?top=0").json()
+    assert len(everything["top_inputs"]) == everything["in_degree"] == 2
+    assert everything["top_inputs"][0]["instance"] == "DA_L"
+
+
 def test_simulate(client: TestClient) -> None:
     body = {
         "circuit": "synthetic",

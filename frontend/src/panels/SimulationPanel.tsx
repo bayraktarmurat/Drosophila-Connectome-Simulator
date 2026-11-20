@@ -4,7 +4,9 @@ import { api } from "../api";
 import LineChart from "../charts/LineChart";
 import type { Series } from "../charts/LineChart";
 import Raster from "../charts/Raster";
+import RasterExplorer from "../charts/RasterExplorer";
 import { seriesColor } from "../colors";
+import Modal from "../components/Modal";
 import StimulusForm from "../components/StimulusForm";
 import { formatNumber } from "../format";
 import type { RunSettings } from "../state";
@@ -25,6 +27,7 @@ interface SimulationPanelProps {
   speed: number;
   onSpeed: (value: number) => void;
   extraPsthTypes: string[];
+  onSelectNeuron: (index: number) => void;
 }
 
 function defaultGroups(sim: SimulateResponse, data: CircuitData, extra: string[]): string[] {
@@ -53,6 +56,7 @@ export default function SimulationPanel(props: SimulationPanelProps) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [applyLesion, setApplyLesion] = useState(false);
+  const [explorerOpen, setExplorerOpen] = useState(false);
   // The user's group choice is remembered per simulation result; a new result starts from defaults.
   const [groupChoice, setGroupChoice] = useState<{ sim: SimulateResponse | null; groups: string[] }>({
     sim: null,
@@ -81,6 +85,7 @@ export default function SimulationPanel(props: SimulationPanelProps) {
     if (applyLesion && props.ablated.size > 0) {
       lesion = {
         types: [],
+        instances: [],
         roles: [],
         body_ids: Array.from(props.ablated).map((i) => props.data.body_ids[i]),
       };
@@ -158,6 +163,30 @@ export default function SimulationPanel(props: SimulationPanelProps) {
       playLabel = "❚❚ Pause";
     }
     const topTypes = sim.type_rates.slice(0, 12);
+    let explorer = null;
+    if (explorerOpen) {
+      explorer = (
+        <Modal
+          title={`Raster explorer · trial ${sim.raster_trial} · ${sim.duration_ms} ms`}
+          onClose={() => setExplorerOpen(false)}
+          wide
+        >
+          <RasterExplorer
+            data={props.data}
+            sim={sim}
+            currentTime={props.time}
+            onTimeClick={(t) => {
+              props.onPlaying(false);
+              props.onTime(t);
+            }}
+            onSelectNeuron={(index) => {
+              setExplorerOpen(false);
+              props.onSelectNeuron(index);
+            }}
+          />
+        </Modal>
+      );
+    }
     results = (
       <div className="sim-results">
         <p className="muted">
@@ -166,6 +195,7 @@ export default function SimulationPanel(props: SimulationPanelProps) {
           )
         </p>
         {truncatedNote}
+        {explorer}
         <div className="playback">
           <button onClick={() => props.onPlaying(!props.playing)}>{playLabel}</button>
           <input
@@ -191,7 +221,12 @@ export default function SimulationPanel(props: SimulationPanelProps) {
             <option value={0.25}>0.25×</option>
           </select>
         </div>
-        <h4>Raster (grouped by role, then type)</h4>
+        <div className="raster-head">
+          <h4>Raster (grouped by role, then type)</h4>
+          <button className="small" onClick={() => setExplorerOpen(true)}>
+            ⤢ enlarge and explore
+          </button>
+        </div>
         <Raster data={props.data} sim={sim} currentTime={props.time} onTimeClick={(t) => props.onTime(t)} />
         <h4>Population rate per group (mean over neurons and trials)</h4>
         <LineChart x={sim.psth.bin_starts_ms} series={series} cursorX={props.time} />

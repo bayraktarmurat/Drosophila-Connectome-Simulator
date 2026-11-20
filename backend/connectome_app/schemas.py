@@ -8,9 +8,10 @@ from pydantic import BaseModel, Field
 
 
 class NeuronSet(BaseModel):
-    """A union of cell types, bodyIds and roles (input / hub / output / interneuron)."""
+    """A union of cell types, instances (e.g. "LB3c_L"), bodyIds and roles."""
 
     types: list[str] = Field(default_factory=list)
+    instances: list[str] = Field(default_factory=list)
     body_ids: list[int] = Field(default_factory=list)
     roles: list[str] = Field(default_factory=list)
 
@@ -83,6 +84,7 @@ class Partner(BaseModel):
     body_id: int
     index: int
     type: str
+    instance: str
     synapses: int
     sign: int
 
@@ -223,7 +225,7 @@ class ScreenRequest(RunSpec):
     candidates: list[str] | None = None
     measure: NeuronSet = Field(default_factory=lambda: NeuronSet(roles=["output"]))
     metric: Literal["spike_count", "rate_hz", "first_spike_ms"] = "spike_count"
-    rank_by: Literal["percent_change", "cohens_d"] = "percent_change"
+    rank_by: Literal["percent_change", "cohens_d", "mean_difference"] = "percent_change"
     max_columns: int = Field(default=200, ge=1, le=2000)
     duration_ms: float = Field(default=300.0, gt=0, le=5000)
     n_trials: int = Field(default=5, ge=2, le=50)

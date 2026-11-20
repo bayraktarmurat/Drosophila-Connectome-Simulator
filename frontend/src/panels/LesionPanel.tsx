@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CircuitData, LesionResponse, Metric, MetricRow, NeuronSet, ScreenStatus } from "../api";
 import { api, resolveSet } from "../api";
 import BarList from "../charts/BarList";
+import type { BarMode } from "../charts/BarList";
 import LineChart from "../charts/LineChart";
 import type { Series } from "../charts/LineChart";
 import { seriesColor } from "../colors";
@@ -106,10 +107,22 @@ export default function LesionPanel(props: LesionPanelProps) {
   const [plotGroup, setPlotGroup] = useState<string>("all outputs");
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [typeDraft, setTypeDraft] = useState<NeuronSet>({ types: [], body_ids: [], roles: [] });
+  const [typeDraft, setTypeDraft] = useState<NeuronSet>({
+    types: [],
+    instances: [],
+    body_ids: [],
+    roles: [],
+  });
 
-  const [measure, setMeasure] = useState<NeuronSet>({ types: [], body_ids: [], roles: ["output"] });
+  const [measure, setMeasure] = useState<NeuronSet>({
+    types: [],
+    instances: [],
+    body_ids: [],
+    roles: ["output"],
+  });
   const [screenMetric, setScreenMetric] = useState<Metric>("spike_count");
+  const [screenRankBy, setScreenRankBy] = useState<BarMode>("percent_change");
+  const [jobRankBy, setJobRankBy] = useState<BarMode>("percent_change");
   const [screenTrials, setScreenTrials] = useState(5);
   const [screenDuration, setScreenDuration] = useState(300);
   const [job, setJob] = useState<ScreenStatus | null>(null);
@@ -133,7 +146,7 @@ export default function LesionPanel(props: LesionPanelProps) {
       next.add(i);
     }
     props.onAblated(next);
-    setTypeDraft({ types: [], body_ids: [], roles: [] });
+    setTypeDraft({ types: [], instances: [], body_ids: [], roles: [] });
   };
 
   const runLesion = async () => {
@@ -147,7 +160,7 @@ export default function LesionPanel(props: LesionPanelProps) {
         n_trials: props.settings.n_trials,
         base_seed: props.settings.base_seed,
         use_extra_edges: props.useExtraEdges,
-        lesion: { types: [], roles: [], body_ids: ablatedBodyIds },
+        lesion: { types: [], instances: [], roles: [], body_ids: ablatedBodyIds },
         output_groups: [],
         bin_ms: 10,
       });
@@ -177,10 +190,11 @@ export default function LesionPanel(props: LesionPanelProps) {
         candidates: null,
         measure,
         metric: screenMetric,
-        rank_by: "percent_change",
+        rank_by: screenRankBy,
         max_columns: 200,
       });
       setJob(status);
+      setJobRankBy(screenRankBy);
       if (pollRef.current !== null) {
         window.clearInterval(pollRef.current);
       }
@@ -295,7 +309,14 @@ export default function LesionPanel(props: LesionPanelProps) {
     const progress = `${job.done} / ${job.total}`;
     let rows = null;
     if (job.results !== null && job.results.length > 0) {
-      rows = <BarList rows={orDefault(job.results, [])} selected={selectedBar} onSelect={selectBar} />;
+      rows = (
+        <BarList
+          rows={orDefault(job.results, [])}
+          selected={selectedBar}
+          onSelect={selectBar}
+          mode={jobRankBy}
+        />
+      );
     }
     let cancel = null;
     if (job.status === "running" || job.status === "queued") {
@@ -327,8 +348,10 @@ export default function LesionPanel(props: LesionPanelProps) {
         {skipped}
         {rows}
         <p className="hint">
-          Bars: % change of the measured group's {METRIC_LABELS[screenMetric]} when each cell type is removed
-          (all its neurons). d = Cohen's d with 95% bootstrap CI. Click a bar to highlight that type.
+          Bars: change of the measured group's {METRIC_LABELS[screenMetric]} when each cell type is removed
+          (all its neurons). Δ = lesion − baseline. &ldquo;from 0&rdquo; = the group was silent at baseline
+          and fired after the lesion (Δ% undefined; ranked first). d = Cohen&apos;s d with 95% bootstrap CI.
+          Click a bar to highlight that type.
         </p>
       </div>
     );
@@ -394,6 +417,17 @@ export default function LesionPanel(props: LesionPanelProps) {
                 {label}
               </option>
             ))}
+          </select>
+        </label>
+        <label
+          className="field"
+          title="Δ% is undefined when the measured group is silent at baseline: such rows rank first and show 'from 0'. Δ spikes ranks by the absolute change."
+        >
+          <span className="field-label">rank by</span>
+          <select value={screenRankBy} onChange={(e) => setScreenRankBy(e.target.value as BarMode)}>
+            <option value="percent_change">Δ % (relative)</option>
+            <option value="mean_difference">Δ spikes (absolute)</option>
+            <option value="cohens_d">Cohen&apos;s d</option>
           </select>
         </label>
         <label className="field">

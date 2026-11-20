@@ -25,3 +25,12 @@ export function signLabel(sign: number): string {
   }
   return "modulatory";
 }
+
+/** Human-readable neuron name: instance (or type) plus bodyId. */
+export function neuronName(instance: string, type: string, bodyId: number): string {
+  let name = type;
+  if (instance.length > 0) {
+    name = instance;
+  }
+  return `${name} (${bodyId})`;
+}

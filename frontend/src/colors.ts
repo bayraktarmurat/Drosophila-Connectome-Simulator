@@ -1,40 +1,49 @@
-// Shared colour helpers. Role colours are used by the graph, raster and legends.
+// Shared colour helpers (dark grey theme). Role colours are used by the graph, raster and charts.
 
 export const ROLE_COLORS: Record<string, string> = {
-  input: "#2563eb",
-  hub: "#dc2626",
-  output: "#16a34a",
-  interneuron: "#94a3b8",
+  input: "#60a5fa",
+  hub: "#f87171",
+  output: "#4ade80",
+  interneuron: "#9ca3af",
 };
 
 export const ROLE_ORDER = ["input", "interneuron", "hub", "output"];
 
-export const EDGE_EXCITATORY = "rgba(71, 85, 105, 0.18)";
-export const EDGE_INHIBITORY = "rgba(220, 38, 38, 0.22)";
-export const EDGE_MODULATORY = "rgba(202, 138, 4, 0.22)";
-export const EDGE_ELECTRICAL = "rgba(147, 51, 234, 0.9)";
-export const HIGHLIGHT = "#f97316";
-export const GLOW = "#facc15";
-export const DIMMED = "#e2e8f0";
-export const ABLATED = "#111827";
+export const EDGE_EXCITATORY = "rgba(203, 213, 225, 0.16)";
+export const EDGE_INHIBITORY = "rgba(248, 113, 113, 0.2)";
+export const EDGE_MODULATORY = "rgba(250, 204, 21, 0.24)";
+export const EDGE_ELECTRICAL = "rgba(192, 132, 252, 0.95)";
+export const HIGHLIGHT = "#fb923c";
+export const GLOW = "#fde047";
+export const DIMMED = "#3a3d44";
+export const ABLATED = "#f4f4f5";
+
+export const LABEL_COLOR = "#e5e7eb";
+export const LABEL_BACKDROP = "#2b2e34";
+
+/** Colours for canvas-drawn charts (raster, uPlot), which cannot read CSS variables. */
+export const CHART_TEXT = "#c4c8cf";
+export const CHART_GRID = "rgba(255, 255, 255, 0.08)";
+export const CHART_BAND = "rgba(255, 255, 255, 0.035)";
+export const CURSOR = "#fb923c";
 
 export const SERIES_PALETTE = [
-  "#2563eb",
-  "#dc2626",
-  "#16a34a",
-  "#9333ea",
-  "#ea580c",
-  "#0891b2",
-  "#be185d",
-  "#4d7c0f",
-  "#7c3aed",
-  "#b45309",
+  "#60a5fa",
+  "#f87171",
+  "#4ade80",
+  "#c084fc",
+  "#fb923c",
+  "#22d3ee",
+  "#f472b6",
+  "#a3e635",
+  "#a78bfa",
+  "#fbbf24",
 ];
 
 export function roleColor(role: string): string {
   const color = ROLE_COLORS[role];
   if (color === undefined) {
-    return "#64748b";
+    return "#9ca3af";
   }
   return color;
 }
@@ -46,7 +55,7 @@ export function typeColor(name: string): string {
     hash = (hash * 31 + name.charCodeAt(i)) | 0;
   }
   const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 65%, 50%)`;
+  return `hsl(${hue}, 70%, 62%)`;
 }
 
 export function seriesColor(index: number): string {

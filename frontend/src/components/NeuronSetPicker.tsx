@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import type { CircuitData, NeuronSet } from "../api";
 import { resolveSet } from "../api";
 
@@ -12,11 +12,24 @@ interface NeuronSetPickerProps {
 
 const ROLES = ["input", "hub", "output", "interneuron"];
 
-/** Choose cell types (autocomplete), roles and individual bodyIds. */
+/** Unique instance names (e.g. "LB3c_L") that differ from their type name. */
+function instanceNames(data: CircuitData): string[] {
+  const names = new Set<string>();
+  for (let i = 0; i < data.instances.length; i += 1) {
+    const name = data.instances[i];
+    if (name.length > 0 && name !== data.types[i]) {
+      names.add(name);
+    }
+  }
+  return Array.from(names).sort();
+}
+
+/** Choose cell types, instances (type + side, e.g. LB3c_L), roles and individual bodyIds. */
 export default function NeuronSetPicker(props: NeuronSetPickerProps) {
   const listId = useId();
   const [draft, setDraft] = useState("");
-  const typeNames = props.data.type_summary.map((t) => t.type);
+  const typeNames = useMemo(() => props.data.type_summary.map((t) => t.type), [props.data]);
+  const instances = useMemo(() => instanceNames(props.data), [props.data]);
   const count = resolveSet(props.data, props.value).length;
 
   const addDraft = () => {
@@ -33,12 +46,19 @@ export default function NeuronSetPicker(props: NeuronSetPickerProps) {
       if (!props.value.types.includes(text)) {
         props.onChange({ ...props.value, types: [...props.value.types, text] });
       }
+    } else if (instances.includes(text)) {
+      if (!props.value.instances.includes(text)) {
+        props.onChange({ ...props.value, instances: [...props.value.instances, text] });
+      }
     }
     setDraft("");
   };
 
   const removeType = (name: string) => {
     props.onChange({ ...props.value, types: props.value.types.filter((t) => t !== name) });
+  };
+  const removeInstance = (name: string) => {
+    props.onChange({ ...props.value, instances: props.value.instances.filter((t) => t !== name) });
   };
   const removeBody = (id: number) => {
     props.onChange({ ...props.value, body_ids: props.value.body_ids.filter((b) => b !== id) });
@@ -85,6 +105,14 @@ export default function NeuronSetPicker(props: NeuronSetPickerProps) {
             </button>
           </span>
         ))}
+        {props.value.instances.map((name) => (
+          <span key={name} className="chip chip-instance" title="instance: one side only">
+            {name}
+            <button onClick={() => removeInstance(name)} aria-label={`remove ${name}`}>
+              ×
+            </button>
+          </span>
+        ))}
         {props.value.body_ids.map((id) => (
           <span key={id} className="chip chip-body">
             {id}
@@ -98,7 +126,7 @@ export default function NeuronSetPicker(props: NeuronSetPickerProps) {
         <input
           list={listId}
           value={draft}
-          placeholder="add cell type or bodyId"
+          placeholder="add type, instance (LB3c_L) or bodyId"
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -110,6 +138,9 @@ export default function NeuronSetPicker(props: NeuronSetPickerProps) {
         <datalist id={listId}>
           {typeNames.map((name) => (
             <option key={name} value={name} />
+          ))}
+          {instances.map((name) => (
+            <option key={`i:${name}`} value={name} />
           ))}
         </datalist>
       </div>

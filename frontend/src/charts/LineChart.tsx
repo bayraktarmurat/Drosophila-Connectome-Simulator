@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
+import { CHART_GRID, CHART_TEXT, CURSOR } from "../colors";
 import { orDefault } from "../state";
 
 export interface Series {
@@ -53,7 +54,7 @@ export default function LineChart(props: LineChartProps) {
       const left = plot.valToPos(value, "x", true);
       const ctx = plot.ctx;
       ctx.save();
-      ctx.strokeStyle = "#f97316";
+      ctx.strokeStyle = CURSOR;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(left, plot.bbox.top);
@@ -67,8 +68,18 @@ export default function LineChart(props: LineChartProps) {
       series: seriesOptions,
       scales: { x: { time: false } },
       axes: [
-        { label: orDefault(props.xLabel, "time (ms)") },
-        { label: orDefault(props.yLabel, "rate (Hz)") },
+        {
+          label: orDefault(props.xLabel, "time (ms)"),
+          stroke: CHART_TEXT,
+          grid: { stroke: CHART_GRID },
+          ticks: { stroke: CHART_GRID },
+        },
+        {
+          label: orDefault(props.yLabel, "rate (Hz)"),
+          stroke: CHART_TEXT,
+          grid: { stroke: CHART_GRID },
+          ticks: { stroke: CHART_GRID },
+        },
       ],
       hooks: { draw: [drawCursor] },
       legend: { live: false },

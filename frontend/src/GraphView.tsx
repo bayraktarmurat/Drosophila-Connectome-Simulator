@@ -3,7 +3,18 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import Sigma from "sigma";
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 import type { CircuitData } from "./api";
-import { ABLATED, DIMMED, EDGE_ELECTRICAL, GLOW, HIGHLIGHT, edgeColor, roleColor, typeColor } from "./colors";
+import {
+  ABLATED,
+  DIMMED,
+  EDGE_ELECTRICAL,
+  GLOW,
+  HIGHLIGHT,
+  LABEL_BACKDROP,
+  LABEL_COLOR,
+  edgeColor,
+  roleColor,
+  typeColor,
+} from "./colors";
 
 export interface Highlight {
   nodes: Set<number>;
@@ -166,7 +177,11 @@ export default function GraphView(props: GraphViewProps) {
       nodeReducer: (_key, _data, attrs) => {
         const state = stateRef.current;
         const index = attrs.index as number;
-        const result: Partial<NodeDisplayData> = {};
+        const result: Partial<NodeDisplayData> = {
+          labelColor: LABEL_COLOR,
+          backdropColor: LABEL_BACKDROP,
+          backdropShadowColor: "rgba(0, 0, 0, 0.6)",
+        };
         if (state.highlight !== null) {
           if (state.highlight.nodes.has(index)) {
             result.zIndex = 2;
@@ -239,6 +254,22 @@ export default function GraphView(props: GraphViewProps) {
       sigmaRef.current.refresh();
     }
   }, [props.selected, props.ablated, props.activity, props.highlight]);
+
+  // The container changes size when the side panel is resized: let sigma re-measure it.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container === null) {
+      return;
+    }
+    const observer = new ResizeObserver(() => {
+      if (sigmaRef.current !== null) {
+        sigmaRef.current.resize();
+        sigmaRef.current.refresh();
+      }
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     return () => {

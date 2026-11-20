@@ -80,7 +80,7 @@ simulation:
   v_threshold_mv: -45.0
   refractory_ms: 2.0
   tau_syn_ms: 5.0
-  w_syn_mv: 0.3
+  w_syn_mv: 0.165
   delay_ms: 2.0
   electrical_delay_ms: 0.1     # extra (electrical) edges act after one time step
   default_duration_ms: 1000.0

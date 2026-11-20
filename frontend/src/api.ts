@@ -2,6 +2,7 @@
 
 export interface NeuronSet {
   types: string[];
+  instances: string[];
   body_ids: number[];
   roles: string[];
 }
@@ -72,6 +73,7 @@ export interface Partner {
   body_id: number;
   index: number;
   type: string;
+  instance: string;
   synapses: number;
   sign: number;
 }
@@ -229,7 +231,7 @@ export interface ScreenRequest extends RunSpec {
   candidates: string[] | null;
   measure: NeuronSet;
   metric: Metric;
-  rank_by: "percent_change" | "cohens_d";
+  rank_by: "percent_change" | "cohens_d" | "mean_difference";
   max_columns: number;
 }
 
@@ -273,8 +275,9 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
 export const api = {
   circuits: () => request<CircuitSummary[]>("GET", "/api/circuits"),
   circuit: (name: string) => request<CircuitData>("GET", `/api/circuits/${encodeURIComponent(name)}`),
-  neuron: (name: string, bodyId: number) =>
-    request<NeuronDetail>("GET", `/api/circuits/${encodeURIComponent(name)}/neurons/${bodyId}`),
+  /** `top` = 0 returns every partner. */
+  neuron: (name: string, bodyId: number, top: number) =>
+    request<NeuronDetail>("GET", `/api/circuits/${encodeURIComponent(name)}/neurons/${bodyId}?top=${top}`),
   simulate: (body: SimulateRequest) => request<SimulateResponse>("POST", "/api/simulate", body),
   paths: (body: PathRequest) => request<PathResponse>("POST", "/api/paths", body),
   lesion: (body: LesionRequest) => request<LesionResponse>("POST", "/api/lesion", body),
@@ -284,21 +287,32 @@ export const api = {
 };
 
 export function emptySet(): NeuronSet {
-  return { types: [], body_ids: [], roles: [] };
+  return { types: [], instances: [], body_ids: [], roles: [] };
 }
 
 export function isEmptySet(set: NeuronSet): boolean {
-  return set.types.length === 0 && set.body_ids.length === 0 && set.roles.length === 0;
+  return (
+    set.types.length === 0 &&
+    set.instances.length === 0 &&
+    set.body_ids.length === 0 &&
+    set.roles.length === 0
+  );
 }
 
 /** Matrix indices covered by a NeuronSet, resolved on the client from circuit data. */
 export function resolveSet(data: CircuitData, set: NeuronSet): number[] {
   const types = new Set(set.types);
+  const instances = new Set(set.instances);
   const roles = new Set(set.roles);
   const ids = new Set(set.body_ids);
   const out: number[] = [];
   for (let i = 0; i < data.body_ids.length; i += 1) {
-    if (types.has(data.types[i]) || roles.has(data.roles[i]) || ids.has(data.body_ids[i])) {
+    const matches =
+      types.has(data.types[i]) ||
+      instances.has(data.instances[i]) ||
+      roles.has(data.roles[i]) ||
+      ids.has(data.body_ids[i]);
+    if (matches) {
       out.push(i);
     }
   }

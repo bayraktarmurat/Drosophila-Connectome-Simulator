@@ -18,11 +18,16 @@ function defaultTargets(data: CircuitData): NeuronSet {
   if (data.roles.includes("output")) {
     roles.push("output");
   }
-  return { types: [], body_ids: [], roles };
+  return { types: [], instances: [], body_ids: [], roles };
 }
 
 export default function PathPanel(props: PathPanelProps) {
-  const [sources, setSources] = useState<NeuronSet>({ types: [], body_ids: [], roles: ["input"] });
+  const [sources, setSources] = useState<NeuronSet>({
+    types: [],
+    instances: [],
+    body_ids: [],
+    roles: ["input"],
+  });
   const [targets, setTargets] = useState<NeuronSet>(() => defaultTargets(props.data));
   const [k, setK] = useState(10);
   const [maxHops, setMaxHops] = useState(4);
